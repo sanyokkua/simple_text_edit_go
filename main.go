@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"log"
+	"simple_text_editor/application"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -12,7 +13,7 @@ import (
 var assets embed.FS
 
 func main() {
-	app := NewApp()
+	editorApp := application.CreateNewApplication()
 
 	err := wails.Run(&options.App{
 		Title:  "Simple Text Editor",
@@ -21,13 +22,18 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
-		Menu:             app.basicMenu(),
+		OnStartup: editorApp.Startup,
+		Menu:      editorApp.CreateMenu(),
 		Bind: []interface{}{
-			app,
+			editorApp,
+		},
+		Debug: options.Debug{
+			OpenInspectorOnStartup: false,
 		},
 	})
+
+	println("From main GO APP:")
+	println(editorApp.AppContext)
 
 	if err != nil {
 		log.Fatal(err.Error())

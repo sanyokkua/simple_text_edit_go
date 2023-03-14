@@ -7,7 +7,7 @@ function App() {
     // @ts-ignore
     const [text, setText] = useState<string>("");
 
-    EventsOn("FileIsChosen", (filePath)=>{
+    EventsOn("EVENT_IS_FILE_OPENED", (filePath)=>{
         setText(filePath)
     })
 
