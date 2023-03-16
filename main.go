@@ -2,14 +2,14 @@ package main
 
 import (
 	"embed"
-	"log"
-	"simple_text_editor/application"
-
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"log"
+	"simple_text_editor/application"
 )
 
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -28,12 +28,9 @@ func main() {
 			editorApp,
 		},
 		Debug: options.Debug{
-			OpenInspectorOnStartup: false,
+			OpenInspectorOnStartup: true,
 		},
 	})
-
-	println("From main GO APP:")
-	println(editorApp.AppContext)
 
 	if err != nil {
 		log.Fatal(err.Error())

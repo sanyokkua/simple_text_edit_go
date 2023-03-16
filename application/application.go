@@ -6,21 +6,15 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
 
-type EditorApplication struct {
-	AppContext  context.Context
-	OpenedFiles map[string]OpenedFile
-}
-
-type OpenedFile struct {
-	fileName     string
-	fileContent  string
-	selectedText string
-}
-
 func CreateNewApplication() *EditorApplication {
-	return &EditorApplication{
-		OpenedFiles: make(map[string]OpenedFile),
+	editorApp := &EditorApplication{
+		AppFiles: make(map[int64]*AppFile),
 	}
+
+	tempFile := createAppFileForNewFile()
+	editorApp.AppFiles[tempFile.Descriptor.FileId] = tempFile
+
+	return editorApp
 }
 
 func (application *EditorApplication) Startup(ctx context.Context) {

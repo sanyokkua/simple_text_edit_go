@@ -5,3 +5,23 @@
 export function CreateMenu() {
   return window['go']['application']['EditorApplication']['CreateMenu']();
 }
+
+export function GetActiveFile() {
+  return window['go']['application']['EditorApplication']['GetActiveFile']();
+}
+
+export function GetAllOpenedFile() {
+  return window['go']['application']['EditorApplication']['GetAllOpenedFile']();
+}
+
+export function GetAllOpenedFileDescriptors() {
+  return window['go']['application']['EditorApplication']['GetAllOpenedFileDescriptors']();
+}
+
+export function MakeFileActive(arg1) {
+  return window['go']['application']['EditorApplication']['MakeFileActive'](arg1);
+}
+
+export function UpdateFileContent(arg1, arg2) {
+  return window['go']['application']['EditorApplication']['UpdateFileContent'](arg1, arg2);
+}
