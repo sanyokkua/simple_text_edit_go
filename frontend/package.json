@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@uiw/codemirror-extensions-basic-setup": "^4.19.9",
+    "@uiw/codemirror-extensions-events": "^4.19.9",
+    "@uiw/codemirror-extensions-langs": "^4.19.9",
     "@uiw/react-codemirror": "^4.19.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

@@ -6,14 +6,14 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"log"
-	"simple_text_editor/application"
+	"simple_text_editor/core"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	editorApp := application.CreateNewApplication()
+	editorApp := core.CreateNewApplication()
 
 	err := wails.Run(&options.App{
 		Title:  "Simple Text Editor",

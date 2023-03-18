@@ -2,74 +2,167 @@ import React from "react"
 
 import {EventsOn} from "../wailsjs/runtime";
 import CodeMirror from '@uiw/react-codemirror';
-
-
-import {GetActiveFile, GetAllOpenedFileDescriptors, MakeFileActive} from "../wailsjs/go/application/EditorApplication"
-import {AppFile, FileDescriptor} from "./types/types";
-import {Menu} from "semantic-ui-react";
-import {MenuItemProps} from "semantic-ui-react/dist/commonjs/collections/Menu/MenuItem";
+import {LanguageName, loadLanguage} from '@uiw/codemirror-extensions-langs';
+import {
+    ActivateFile,
+    GetActiveFile,
+    GetAllFilesInformation,
+    UpdateActiveFileContent
+} from "../wailsjs/go/core/EditorApplication"
+import {FileInformation, FileInMemory} from "./types/types";
+import {
+    EventOnErrorHappened,
+    EventOnFileClosed,
+    EventOnFileOpened,
+    EventOnFileSaved,
+    EventOnNewFileCreate
+} from "./types/constants";
+import {Button, Menu, Modal} from "semantic-ui-react";
+import {SemanticCOLORS} from "semantic-ui-react/dist/commonjs/generic";
 
 type AppState = {
-    activeFile: AppFile | null,
-    openedFiles: FileDescriptor[]
+    files: FileInformation[];
+    currentFile: FileInMemory | null;
+    currentLanguage: any | null;
+    errorModal: boolean;
+    errorText: string;
 };
+
+const COLOR_NEW: SemanticCOLORS = "red"
+const COLOR_NO_CHANGES: SemanticCOLORS = "black"
+const COLOR_HAS_CHANGES: SemanticCOLORS = "blue"
 
 class App extends React.Component<any, AppState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            activeFile: null,
-            openedFiles: []
+            files: [],
+            currentFile: null,
+            currentLanguage: null,
+            errorModal: false,
+            errorText: "",
         };
-        EventsOn("EVENT_IS_FILE_OPENED", () => {
-            this.updateState().then()
+        EventsOn(EventOnNewFileCreate, () => {
+            console.log("EventOnNewFileCreate")
+            this.updateState().catch((e) => this.onErrorProcessing(e))
         });
+        EventsOn(EventOnFileOpened, () => {
+            console.log("EventOnFileOpened")
+            this.updateState().catch((e) => this.onErrorProcessing(e))
+        });
+        EventsOn(EventOnFileSaved, (file) => {
+            console.log("EventOnFileSaved", file)
+            this.updateState().catch((e) => this.onErrorProcessing(e))
+        });
+        EventsOn(EventOnFileClosed, (file) => {
+            console.log("EventOnFileClosed", file)
+            this.updateState().catch((e) => this.onErrorProcessing(e))
+        });
+        EventsOn(EventOnErrorHappened, (error) => {
+            console.log("EventOnErrorHappened")
+            this.onErrorProcessing(error)
+        });
+    }
+
+    componentDidMount() {
+        this.updateState().catch((e) => this.onErrorProcessing(e))
+    }
+
+    onErrorProcessing(error: any) {
+        let msg = error?.message ? error?.message : JSON.stringify(error)
+        console.error(msg)
+        this.setState({
+            errorModal: true,
+            errorText: msg
+        })
     }
 
     async updateState() {
-        const activeFile: AppFile = await GetActiveFile()
-        const files: FileDescriptor[] = await GetAllOpenedFileDescriptors()
-        files.sort((a, b) => a.FileId - b.FileId)
-        this.setState({
-            activeFile: activeFile,
-            openedFiles: files
-        });
+        try {
+            const files: FileInformation[] = await GetAllFilesInformation()
+            // Sort files by time of open/creation (internal ID of each file)
+            files.sort((a, b) => a.OpenTimeStamp - b.OpenTimeStamp)
+
+            const currentFile: FileInMemory = await GetActiveFile()
+            const currentFileLang = loadLanguage(currentFile.Descriptor.Type as LanguageName)
+
+            this.setState({
+                files: files,
+                currentFile: currentFile,
+                currentLanguage: currentFileLang,
+            });
+        } catch (e) {
+            this.onErrorProcessing(e)
+        }
     }
 
-    async componentDidMount() {
-        await this.updateState()
+    tabIsChanged(fileId: number) {
+        ActivateFile(fileId).then(() => this.updateState()).catch((e) => this.onErrorProcessing(e))
     }
 
-    async tabIsClicked(event: React.MouseEvent<HTMLAnchorElement>, data: MenuItemProps, fileId: number) {
-        await MakeFileActive(fileId)
-        await this.updateState()
+    contentIsChanged(text: string) {
+        UpdateActiveFileContent(text)
+            .then((hasChanges: boolean) => this.state.currentFile?.Descriptor.IsChanged !== hasChanges)
+            .then((needsUpdate: boolean) => {
+                    if (needsUpdate) {
+                        return this.updateState().then()
+                    }
+                },
+            ).catch((e) => this.onErrorProcessing(e));
     }
 
     render() {
-        const menuItems = this.state.openedFiles.map(openedFile => {
-            return <Menu.Item
-                name={openedFile.FileName}
-                active={openedFile.IsActive}
-                onClick={(event: React.MouseEvent<HTMLAnchorElement>, data: MenuItemProps) => this.tabIsClicked(event, data, openedFile.FileId)}
-            />
-        })
-        console.log(menuItems);
+        const extensions: any[] = []
+        if (this.state.currentLanguage) {
+            extensions.push(this.state.currentLanguage)
+        }
 
-        const activeFile = this.state.activeFile;
-        console.log(activeFile);
+        const menuItems = this.state.files.map(openedFile => {
+            const key: string = openedFile.OpenTimeStamp.toString();
+            const fileExist: boolean = openedFile.Exists;
+            const fileName: string = fileExist ? openedFile.Name : "*New";
+            const isActive: boolean = openedFile.IsOpenedNow;
+            const hasChanges: boolean = openedFile.IsChanged
+            const color: SemanticCOLORS = fileExist ? hasChanges ? COLOR_HAS_CHANGES : COLOR_NO_CHANGES : COLOR_NEW;
 
-        const fileContent = activeFile?.FileContent;
-        console.log(fileContent);
+            return <Menu.Item key={key} active={isActive} color={color}
+                              onClick={() => this.tabIsChanged(openedFile.OpenTimeStamp)}>
+                {fileName}
+            </Menu.Item>
+        });
+        const fileContent = this.state.currentFile?.ActualContent;
 
         return (
             <div>
-                <Menu tabular>
-                    {menuItems}
-                </Menu>
+                <Menu tabular>{menuItems}</Menu>
                 <CodeMirror
                     value={fileContent}
                     height="100vh"
+                    onChange={(text) => this.contentIsChanged(text)}
+                    basicSetup={{
+                        foldGutter: true,
+                        allowMultipleSelections: true,
+                        indentOnInput: true,
+                        tabSize: 4,
+                        highlightActiveLine: true,
+                        highlightActiveLineGutter: true,
+                        highlightSelectionMatches: true,
+                        syntaxHighlighting: true,
+                        bracketMatching: true
+                    }}
+                    extensions={extensions}
                 />
+                <Modal dimmer={"blurring"} open={this.state.errorModal} size={'mini'}
+                       onClose={() => this.setState({errorModal: false})}
+                >
+                    <Modal.Header>Error happened </Modal.Header>
+                    <Modal.Content>
+                        {this.state.errorText}
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button negative onClick={() => this.setState({errorModal: false})}>Ok</Button>
+                    </Modal.Actions>
+                </Modal>
             </div>
         )
     }
