@@ -6,14 +6,18 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"log"
-	"simple_text_editor/core"
+	"simple_text_editor/core/api"
+	"simple_text_editor/core/application"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	editorApp := core.CreateNewApplication()
+	app := application.CreateApplicationContextHolderApi()
+	//editorApp := core.CreateNewApplication() //TODO: remove
+
+	var jsApi api.JsApi = app.GetJsApi()
 
 	err := wails.Run(&options.App{
 		Title:  "Simple Text Editor",
@@ -22,10 +26,14 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		OnStartup: editorApp.Startup,
-		Menu:      editorApp.CreateMenu(),
+		OnStartup:     app.OnStartup,
+		OnDomReady:    app.OnDomReady,
+		OnShutdown:    app.OnShutdown,
+		OnBeforeClose: app.OnBeforeClose,
+		Menu:          app.GetApplicationMenu().CreateMenu(),
 		Bind: []interface{}{
-			editorApp,
+			//editorApp,
+			jsApi,
 		},
 		Debug: options.Debug{
 			OpenInspectorOnStartup: true,

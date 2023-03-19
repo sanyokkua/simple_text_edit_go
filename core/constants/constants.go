@@ -90,6 +90,10 @@ func GetSupportedFileFilters() []runtime.FileFilter {
 		DisplayName: "Plain Text",
 		Pattern:     "*.txt",
 	})
+	fileFilters = append(fileFilters, runtime.FileFilter{
+		DisplayName: "Any File",
+		Pattern:     "",
+	})
 
 	return fileFilters
 }

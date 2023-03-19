@@ -4,12 +4,12 @@ import {EventsOn} from "../wailsjs/runtime";
 import CodeMirror from '@uiw/react-codemirror';
 import {LanguageName, loadLanguage} from '@uiw/codemirror-extensions-langs';
 import {
-    ActivateFile,
-    GetActiveFile,
-    GetAllFilesInformation,
-    UpdateActiveFileContent
-} from "../wailsjs/go/core/EditorApplication"
-import {FileInformation, FileInMemory} from "./types/types";
+    ChangeFileContent,
+    ChangeFileStatusToOpened,
+    FindOpenedFile,
+    GetFilesInformation
+} from "../wailsjs/go/internals/EditorInternalApi"
+import {FileStruct, InformationStruct} from "./types/types";
 import {
     EventOnErrorHappened,
     EventOnFileClosed,
@@ -21,8 +21,8 @@ import {Button, Menu, Modal} from "semantic-ui-react";
 import {SemanticCOLORS} from "semantic-ui-react/dist/commonjs/generic";
 
 type AppState = {
-    files: FileInformation[];
-    currentFile: FileInMemory | null;
+    files: InformationStruct[];
+    currentFile: FileStruct;
     currentLanguage: any | null;
     errorModal: boolean;
     errorText: string;
@@ -37,7 +37,7 @@ class App extends React.Component<any, AppState> {
         super(props);
         this.state = {
             files: [],
-            currentFile: null,
+            currentFile: {} as FileStruct,
             currentLanguage: null,
             errorModal: false,
             errorText: "",
@@ -79,12 +79,14 @@ class App extends React.Component<any, AppState> {
 
     async updateState() {
         try {
-            const files: FileInformation[] = await GetAllFilesInformation()
+            const files: InformationStruct[] = await GetFilesInformation()
+            console.log(files)
             // Sort files by time of open/creation (internal ID of each file)
             files.sort((a, b) => a.OpenTimeStamp - b.OpenTimeStamp)
 
-            const currentFile: FileInMemory = await GetActiveFile()
-            const currentFileLang = loadLanguage(currentFile.Descriptor.Type as LanguageName)
+            const currentFile: FileStruct = await FindOpenedFile()
+            console.log(currentFile)
+            const currentFileLang = loadLanguage(currentFile.FileInfo.FileType as LanguageName)
 
             this.setState({
                 files: files,
@@ -97,12 +99,16 @@ class App extends React.Component<any, AppState> {
     }
 
     tabIsChanged(fileId: number) {
-        ActivateFile(fileId).then(() => this.updateState()).catch((e) => this.onErrorProcessing(e))
+        ChangeFileStatusToOpened(fileId)
+            .then(() => this.updateState())
+            .catch((e) => this.onErrorProcessing(e))
     }
 
     contentIsChanged(text: string) {
-        UpdateActiveFileContent(text)
-            .then((hasChanges: boolean) => this.state.currentFile?.Descriptor.IsChanged !== hasChanges)
+        // @ts-ignore
+        let openTimeStamp: number = this.state.currentFile?.FileInfo.OpenTimeStamp;
+        ChangeFileContent(openTimeStamp, text)
+            .then((hasChanges: boolean) => this.state.currentFile?.FileInfo.HasChanges !== hasChanges)
             .then((needsUpdate: boolean) => {
                     if (needsUpdate) {
                         return this.updateState().then()
@@ -119,10 +125,10 @@ class App extends React.Component<any, AppState> {
 
         const menuItems = this.state.files.map(openedFile => {
             const key: string = openedFile.OpenTimeStamp.toString();
-            const fileExist: boolean = openedFile.Exists;
-            const fileName: string = fileExist ? openedFile.Name : "*New";
-            const isActive: boolean = openedFile.IsOpenedNow;
-            const hasChanges: boolean = openedFile.IsChanged
+            const fileExist: boolean = openedFile.FileExists;
+            const fileName: string = fileExist ? openedFile.FileName : "*New";
+            const isActive: boolean = openedFile.FileOpened;
+            const hasChanges: boolean = openedFile.HasChanges
             const color: SemanticCOLORS = fileExist ? hasChanges ? COLOR_HAS_CHANGES : COLOR_NO_CHANGES : COLOR_NEW;
 
             return <Menu.Item key={key} active={isActive} color={color}
