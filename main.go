@@ -3,9 +3,9 @@ package main
 import (
 	"embed"
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"log"
 	"simple_text_editor/core/implementation"
 )
 
@@ -16,6 +16,7 @@ func main() {
 	app := *implementation.CreateApplicationContextHolderApi()
 	jsApi := app.GetJsApi()
 	menu := app.GetApplicationMenu()
+	newDefaultLogger := logger.NewDefaultLogger()
 
 	err := wails.Run(&options.App{
 		Title:  "Simple Text Editor",
@@ -35,9 +36,10 @@ func main() {
 		Debug: options.Debug{
 			OpenInspectorOnStartup: true,
 		},
+		Logger: newDefaultLogger,
 	})
 
 	if err != nil {
-		log.Fatal(err.Error())
+		newDefaultLogger.Fatal(err.Error())
 	}
 }

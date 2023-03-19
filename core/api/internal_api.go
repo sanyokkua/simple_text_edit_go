@@ -6,6 +6,7 @@ import (
 )
 
 type ContextRetriever func() (ctx context.Context)
+
 type FileInformation interface {
 	GetOpenTimeStamp() int64
 	GetPath() string
@@ -14,6 +15,7 @@ type FileInformation interface {
 	GetType() string
 	Exists() bool
 	IsOpened() bool
+	HasChanges() bool
 
 	SetOpenTimeStamp(timestamp int64)
 	SetPath(path string)
@@ -22,6 +24,7 @@ type FileInformation interface {
 	SetType(typeVal string)
 	SetExists(exists bool)
 	SetIsOpened(opened bool)
+	SetHasChanges(changed bool)
 }
 type OpenedFile interface {
 	GetInformation() *FileInformation
@@ -53,13 +56,17 @@ type DialogsApi interface {
 	SaveFileDialog() (filePath string, err error)
 	OkCancelMessageDialog(title string, message string) (clickedBtnName string, err error)
 }
-
 type ApplicationMenu interface {
 	GetContext() *context.Context
 	CreateMenu() *menu.Menu
 	SendEvent(destination string, optionalData ...interface{})
 }
-
+type JsApi interface {
+	GetFilesInformation() []FileInformation
+	FindOpenedFile() OpenedFile
+	ChangeFileStatusToOpened(uniqueIdentifier int64)
+	ChangeFileContent(uniqueIdentifier int64, content string) bool
+}
 type ApplicationContextHolderApi interface {
 	GetContext() context.Context
 

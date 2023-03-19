@@ -2,6 +2,7 @@ package menu
 
 import (
 	"context"
+	"github.com/labstack/gommon/log"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -18,10 +19,12 @@ type AppMenu struct {
 }
 
 func (r *AppMenu) getFilesMap() map[int64]*api.OpenedFile {
+	log.Info("getFilesMap", *r.applicationApi.GetFilesMap())
 	return *r.applicationApi.GetFilesMap()
 }
 
 func (r *AppMenu) CreateMenu() *menu.Menu {
+	log.Info("CreateMenu")
 	appMenu := menu.NewMenu()
 
 	file := appMenu.AddSubmenu("OpenedFile")
@@ -38,14 +41,17 @@ func (r *AppMenu) CreateMenu() *menu.Menu {
 	return appMenu
 }
 func (r *AppMenu) GetContext() *context.Context {
+	log.Info("GetContext")
 	ctx := r.contextRetriever()
 	return &ctx
 }
 func (r *AppMenu) SendEvent(destination string, optionalData ...interface{}) {
+	log.Info("SendEvent", destination, optionalData)
 	ctx := r.GetContext()
 	runtime.EventsEmit(*ctx, destination, optionalData...)
 }
 func (r *AppMenu) menuFileNewItemClicked(*menu.CallbackData) {
+	log.Info("menuFileNewItemClicked")
 	emptyFileRef := utils.CreateEmptyFile()
 	addedFileRef := r.applicationApi.AddFileToMemory(&emptyFileRef)
 	addedFileInf := *(*addedFileRef).GetInformation()
@@ -55,6 +61,7 @@ func (r *AppMenu) menuFileNewItemClicked(*menu.CallbackData) {
 	r.SendEvent(constants.EventOnNewFileCreate, addedFileRef)
 }
 func (r *AppMenu) menuFileOpenItemClicked(*menu.CallbackData) {
+	log.Info("menuFileOpenItemClicked")
 	filePath, dialogErr := r.dialogs.OpenFileDialog()
 	if dialogErr != nil {
 		return
@@ -81,6 +88,7 @@ func (r *AppMenu) menuFileOpenItemClicked(*menu.CallbackData) {
 	r.SendEvent(constants.EventOnFileOpened, addedFileRef)
 }
 func (r *AppMenu) menuFileSaveItemClicked(data *menu.CallbackData) {
+	log.Info("menuFileSaveItemClicked")
 	openedFile := r.applicationApi.FindOpenedFile()
 	if openedFile == nil {
 		sendErrorGenericMessage(r, "Active file is not found. Internal error of app.")
@@ -104,6 +112,7 @@ func (r *AppMenu) menuFileSaveItemClicked(data *menu.CallbackData) {
 	r.SendEvent(constants.EventOnFileSaved, openedFile)
 }
 func (r *AppMenu) menuFileSaveAsItemClicked(*menu.CallbackData) {
+	log.Info("menuFileSaveAsItemClicked")
 	filePath, dialogErr := r.dialogs.SaveFileDialog()
 	if dialogErr != nil {
 		return
@@ -122,13 +131,20 @@ func (r *AppMenu) menuFileSaveAsItemClicked(*menu.CallbackData) {
 	}
 
 	infoObj := *openedFile.GetInformation()
-	infoObj.SetPath(filePath)
+
+	upd := utils.CreateInformationFromPath(filePath)
+	infoObj.SetPath((*upd).GetPath())
+	infoObj.SetName((*upd).GetName())
+	infoObj.SetExt((*upd).GetExt())
+	infoObj.SetType((*upd).GetType())
+	infoObj.SetExists((*upd).Exists())
 
 	openedFile.SetOriginalContent(openedFile.GetActualContent())
 
 	r.SendEvent(constants.EventOnFileSaved, openedFile)
 }
 func (r *AppMenu) menuFileCloseFileItemClicked(*menu.CallbackData) {
+	log.Info("menuFileCloseFileItemClicked")
 	openedFile := r.applicationApi.FindOpenedFile()
 	if openedFile != nil {
 		sendErrorGenericMessage(r, "Problem happened with getting active file (opened now in application)")
@@ -139,9 +155,11 @@ func (r *AppMenu) menuFileCloseFileItemClicked(*menu.CallbackData) {
 	uniqueId := infoObj.GetOpenTimeStamp()
 
 	if !openedFile.HasChanges() {
+		log.Info("menuFileCloseFileItemClicked, Doesn't have changes")
 		r.closeFileAndChoseNextOrNew(uniqueId)
 		return
 	}
+	log.Info("menuFileCloseFileItemClicked, Have changes")
 
 	dialogResult, err := r.dialogs.OkCancelMessageDialog(
 		"OpenedFile has changes",
@@ -152,11 +170,13 @@ func (r *AppMenu) menuFileCloseFileItemClicked(*menu.CallbackData) {
 	}
 
 	if dialogResult == "Ok" {
+		log.Info("menuFileCloseFileItemClicked, Dialog result - OK")
 		r.closeFileAndChoseNextOrNew(uniqueId)
 		return
 	}
 }
 func (r *AppMenu) closeFileAndChoseNextOrNew(uniqueId int64) {
+	log.Info("closeFileAndChoseNextOrNew", uniqueId)
 	r.applicationApi.CloseFile(uniqueId)
 	anyFile := r.applicationApi.FindAnyFileInMemory()
 	anyFileInfo := *(*anyFile).GetInformation()
@@ -165,6 +185,7 @@ func (r *AppMenu) closeFileAndChoseNextOrNew(uniqueId int64) {
 	r.SendEvent(constants.EventOnFileClosed)
 }
 func (r *AppMenu) menuFileCloseAppItemClicked(*menu.CallbackData) {
+	log.Info("menuFileCloseAppItemClicked")
 	var hasChanges bool
 	for _, file := range r.getFilesMap() {
 		if (*file).HasChanges() {
@@ -174,8 +195,10 @@ func (r *AppMenu) menuFileCloseAppItemClicked(*menu.CallbackData) {
 	}
 
 	if !hasChanges {
+		log.Info("menuFileCloseAppItemClicked, Doesn't have changes")
 		runtime.Quit(*r.GetContext())
 	}
+	log.Info("menuFileCloseAppItemClicked, Have changes")
 
 	dialogResult, err := r.dialogs.OkCancelMessageDialog(
 		"flaskApplicationApi has files with changes",
@@ -186,14 +209,16 @@ func (r *AppMenu) menuFileCloseAppItemClicked(*menu.CallbackData) {
 	}
 
 	if dialogResult == "Ok" {
+		log.Info("menuFileCloseAppItemClicked, Dialog result - OK")
 		runtime.Quit(*r.GetContext())
 	}
 }
 func (r *AppMenu) menuEditSortItemClicked(*menu.CallbackData) {
-
+	log.Info("menuEditSortItemClicked")
 }
 
 func CreateApplicationMenu(contextRetriever *api.ContextRetriever, applicationApi *api.EditorApplication, dialogs *api.DialogsApi) api.ApplicationMenu {
+	log.Info("CreateApplicationMenu", *contextRetriever, *applicationApi, *dialogs)
 	return &AppMenu{
 		contextRetriever: *contextRetriever,
 		applicationApi:   *applicationApi,

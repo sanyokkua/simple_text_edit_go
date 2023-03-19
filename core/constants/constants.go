@@ -2,6 +2,7 @@ package constants
 
 import (
 	"fmt"
+	"github.com/labstack/gommon/log"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -21,6 +22,7 @@ type FileTypeInformation struct {
 }
 
 func createFileTypeInformation(key string, name string, extensions ...string) FileTypeInformation {
+	log.Info("createFileTypeInformation", key, name, extensions)
 	return FileTypeInformation{
 		Key:        key,
 		Name:       name,
@@ -29,6 +31,7 @@ func createFileTypeInformation(key string, name string, extensions ...string) Fi
 }
 
 func getFileTypeInformation() []FileTypeInformation {
+	log.Info("getFileTypeInformation")
 	return []FileTypeInformation{
 		createFileTypeInformation("c", "C", "c", "h", "cc", "hh", "C", "H"),
 		createFileTypeInformation("cmake", "Cmake", "cmake"),
@@ -69,11 +72,13 @@ func getFileTypeInformation() []FileTypeInformation {
 }
 
 func createFileFilter(fileTypeInfo *FileTypeInformation) runtime.FileFilter {
+	log.Info("createFileFilter", *fileTypeInfo)
 	typePattern := "*.%s;"
 	pattern := ""
 	for _, value := range fileTypeInfo.Extensions {
 		pattern += fmt.Sprintf(typePattern, value)
 	}
+	log.Info("createFileFilter", pattern)
 	return runtime.FileFilter{
 		DisplayName: fileTypeInfo.Name,
 		Pattern:     pattern,
@@ -81,6 +86,7 @@ func createFileFilter(fileTypeInfo *FileTypeInformation) runtime.FileFilter {
 }
 
 func GetSupportedFileFilters() []runtime.FileFilter {
+	log.Info("GetSupportedFileFilters")
 	fileTypes := getFileTypeInformation()
 	fileFilters := make([]runtime.FileFilter, 0, 10)
 	for _, value := range fileTypes {
@@ -94,11 +100,12 @@ func GetSupportedFileFilters() []runtime.FileFilter {
 		DisplayName: "Any File",
 		Pattern:     "",
 	})
-
+	log.Info("GetSupportedFileFilters, return", fileFilters)
 	return fileFilters
 }
 
 func GetExtToLangMapping() *map[string]string {
+	log.Info("GetExtToLangMapping")
 	info := getFileTypeInformation()
 	mapping := make(map[string]string)
 	for _, fileTypeInfo := range info {
@@ -106,5 +113,6 @@ func GetExtToLangMapping() *map[string]string {
 			mapping[ext] = fileTypeInfo.Key
 		}
 	}
+	log.Info("GetExtToLangMapping, return", mapping)
 	return &mapping
 }
