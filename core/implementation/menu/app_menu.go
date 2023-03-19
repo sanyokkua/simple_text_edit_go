@@ -1,4 +1,4 @@
-package appmenu
+package menu
 
 import (
 	"context"
@@ -7,29 +7,29 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"simple_text_editor/core/api"
 	"simple_text_editor/core/constants"
+	"simple_text_editor/core/implementation/utils"
 	"simple_text_editor/core/logic/files"
 )
 
 type AppMenu struct {
-	contextRetriever api.GetContext
-	appFilesMap      *map[int64]*api.FileApi
-	applicationApi   api.EditorApplicationApi
+	contextRetriever api.ContextRetriever
+	applicationApi   api.EditorApplication
 	dialogs          api.DialogsApi
 }
 
-func (r *AppMenu) getFilesMap() map[int64]*api.FileApi {
-	return *r.appFilesMap
+func (r *AppMenu) getFilesMap() map[int64]*api.OpenedFile {
+	return *r.applicationApi.GetFilesMap()
 }
 
 func (r *AppMenu) CreateMenu() *menu.Menu {
 	appMenu := menu.NewMenu()
 
-	file := appMenu.AddSubmenu("FileApi")
+	file := appMenu.AddSubmenu("OpenedFile")
 	file.AddText("New", keys.CmdOrCtrl("N"), r.menuFileNewItemClicked)
 	file.AddText("Open", keys.CmdOrCtrl("O"), r.menuFileOpenItemClicked)
 	file.AddText("Save", keys.CmdOrCtrl("S"), r.menuFileSaveItemClicked)
 	file.AddText("Save as", nil, r.menuFileSaveAsItemClicked)
-	file.AddText("Close FileApi", nil, r.menuFileCloseFileItemClicked)
+	file.AddText("Close OpenedFile", nil, r.menuFileCloseFileItemClicked)
 	file.AddText("Close Application", keys.CmdOrCtrl("Q"), r.menuFileCloseAppItemClicked)
 
 	edit := appMenu.AddSubmenu("Edit")
@@ -46,9 +46,9 @@ func (r *AppMenu) SendEvent(destination string, optionalData ...interface{}) {
 	runtime.EventsEmit(*ctx, destination, optionalData...)
 }
 func (r *AppMenu) menuFileNewItemClicked(*menu.CallbackData) {
-	emptyFileRef := r.applicationApi.CreateEmptyFile()
-	addedFileRef := r.applicationApi.AddEmptyFile(emptyFileRef)
-	addedFileInf := *(*addedFileRef).GetInformationRef()
+	emptyFileRef := utils.CreateEmptyFile()
+	addedFileRef := r.applicationApi.AddFileToMemory(&emptyFileRef)
+	addedFileInf := *(*addedFileRef).GetInformation()
 
 	r.applicationApi.ChangeFileStatusToOpened(addedFileInf.GetOpenTimeStamp())
 
@@ -62,7 +62,7 @@ func (r *AppMenu) menuFileOpenItemClicked(*menu.CallbackData) {
 
 	fileAlreadyOpened := r.applicationApi.IsFileAlreadyOpened(filePath)
 	if fileAlreadyOpened {
-		sendErrorGenericMessage(r, "FileApi is already opened in application")
+		sendErrorGenericMessage(r, "OpenedFile is already opened in application")
 		return
 	}
 
@@ -72,9 +72,9 @@ func (r *AppMenu) menuFileOpenItemClicked(*menu.CallbackData) {
 		return
 	}
 
-	existingFileRef := r.applicationApi.CreateExistingFile(filePath, fileContent)
-	addedFileRef := r.applicationApi.AddExistingFile(existingFileRef)
-	informationObj := *(*addedFileRef).GetInformationRef()
+	existingFileRef := utils.CreateExistingFile(filePath, fileContent)
+	addedFileRef := r.applicationApi.AddFileToMemory(&existingFileRef)
+	informationObj := *(*addedFileRef).GetInformation()
 
 	r.applicationApi.ChangeFileStatusToOpened(informationObj.GetOpenTimeStamp())
 
@@ -87,8 +87,8 @@ func (r *AppMenu) menuFileSaveItemClicked(data *menu.CallbackData) {
 		return
 	}
 
-	info := *openedFile.GetInformationRef()
-	if !info.GetExists() {
+	info := *openedFile.GetInformation()
+	if !info.Exists() {
 		r.menuFileSaveAsItemClicked(data)
 		return
 	}
@@ -121,7 +121,7 @@ func (r *AppMenu) menuFileSaveAsItemClicked(*menu.CallbackData) {
 		return
 	}
 
-	infoObj := *openedFile.GetInformationRef()
+	infoObj := *openedFile.GetInformation()
 	infoObj.SetPath(filePath)
 
 	openedFile.SetOriginalContent(openedFile.GetActualContent())
@@ -135,7 +135,7 @@ func (r *AppMenu) menuFileCloseFileItemClicked(*menu.CallbackData) {
 		return
 	}
 
-	infoObj := *openedFile.GetInformationRef()
+	infoObj := *openedFile.GetInformation()
 	uniqueId := infoObj.GetOpenTimeStamp()
 
 	if !openedFile.HasChanges() {
@@ -144,7 +144,7 @@ func (r *AppMenu) menuFileCloseFileItemClicked(*menu.CallbackData) {
 	}
 
 	dialogResult, err := r.dialogs.OkCancelMessageDialog(
-		"FileApi has changes",
+		"OpenedFile has changes",
 		"You are trying to close file that have changes, continue?",
 	)
 	if err != nil {
@@ -159,7 +159,7 @@ func (r *AppMenu) menuFileCloseFileItemClicked(*menu.CallbackData) {
 func (r *AppMenu) closeFileAndChoseNextOrNew(uniqueId int64) {
 	r.applicationApi.CloseFile(uniqueId)
 	anyFile := r.applicationApi.FindAnyFileInMemory()
-	anyFileInfo := *(*anyFile).GetInformationRef()
+	anyFileInfo := *(*anyFile).GetInformation()
 	r.applicationApi.ChangeFileStatusToOpened(anyFileInfo.GetOpenTimeStamp())
 
 	r.SendEvent(constants.EventOnFileClosed)
@@ -193,14 +193,10 @@ func (r *AppMenu) menuEditSortItemClicked(*menu.CallbackData) {
 
 }
 
-func CreateApplicationMenu(contextRetriever api.GetContext,
-	appFilesMap *map[int64]*api.FileApi,
-	applicationApi api.EditorApplicationApi,
-	dialogs api.DialogsApi) api.ApplicationMenu {
+func CreateApplicationMenu(contextRetriever *api.ContextRetriever, applicationApi *api.EditorApplication, dialogs *api.DialogsApi) api.ApplicationMenu {
 	return &AppMenu{
-		contextRetriever: contextRetriever,
-		appFilesMap:      appFilesMap,
-		applicationApi:   applicationApi,
-		dialogs:          dialogs,
+		contextRetriever: *contextRetriever,
+		applicationApi:   *applicationApi,
+		dialogs:          *dialogs,
 	}
 }

@@ -8,7 +8,7 @@ import {
     ChangeFileStatusToOpened,
     FindOpenedFile,
     GetFilesInformation
-} from "../wailsjs/go/internals/EditorInternalApi"
+} from "../wailsjs/go/jsapi/JsApiStruct"
 import {FileStruct, InformationStruct} from "./types/types";
 import {
     EventOnErrorHappened,
@@ -108,7 +108,7 @@ class App extends React.Component<any, AppState> {
         // @ts-ignore
         let openTimeStamp: number = this.state.currentFile?.FileInfo.OpenTimeStamp;
         ChangeFileContent(openTimeStamp, text)
-            .then((hasChanges: boolean) => this.state.currentFile?.FileInfo.HasChanges !== hasChanges)
+            .then((hasChanges: boolean) => this.state.currentFile?.FileInfo.FileHasChanges !== hasChanges)
             .then((needsUpdate: boolean) => {
                     if (needsUpdate) {
                         return this.updateState().then()
@@ -127,8 +127,8 @@ class App extends React.Component<any, AppState> {
             const key: string = openedFile.OpenTimeStamp.toString();
             const fileExist: boolean = openedFile.FileExists;
             const fileName: string = fileExist ? openedFile.FileName : "*New";
-            const isActive: boolean = openedFile.FileOpened;
-            const hasChanges: boolean = openedFile.HasChanges
+            const isActive: boolean = openedFile.FileIsOpened;
+            const hasChanges: boolean = openedFile.FileHasChanges
             const color: SemanticCOLORS = fileExist ? hasChanges ? COLOR_HAS_CHANGES : COLOR_NO_CHANGES : COLOR_NEW;
 
             return <Menu.Item key={key} active={isActive} color={color}

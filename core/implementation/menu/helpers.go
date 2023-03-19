@@ -1,4 +1,4 @@
-package appmenu
+package menu
 
 import (
 	"simple_text_editor/core/apperrors"

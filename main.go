@@ -6,18 +6,16 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"log"
-	"simple_text_editor/core/api"
-	"simple_text_editor/core/application"
+	"simple_text_editor/core/implementation"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	app := application.CreateApplicationContextHolderApi()
-	//editorApp := core.CreateNewApplication() //TODO: remove
-
-	var jsApi api.JsApi = app.GetJsApi()
+	app := *implementation.CreateApplicationContextHolderApi()
+	jsApi := app.GetJsApi()
+	menu := app.GetApplicationMenu()
 
 	err := wails.Run(&options.App{
 		Title:  "Simple Text Editor",
@@ -30,9 +28,8 @@ func main() {
 		OnDomReady:    app.OnDomReady,
 		OnShutdown:    app.OnShutdown,
 		OnBeforeClose: app.OnBeforeClose,
-		Menu:          app.GetApplicationMenu().CreateMenu(),
+		Menu:          menu.CreateMenu(),
 		Bind: []interface{}{
-			//editorApp,
 			jsApi,
 		},
 		Debug: options.Debug{

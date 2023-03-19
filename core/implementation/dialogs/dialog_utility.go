@@ -1,6 +1,7 @@
 package dialogs
 
 import (
+	"context"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"simple_text_editor/core/api"
@@ -9,14 +10,19 @@ import (
 )
 
 type DialogStruct struct {
-	contextRetriever api.GetContext
+	contextRetriever api.ContextRetriever
+}
+
+func (r *DialogStruct) GetContext() *context.Context {
+	ctx := r.contextRetriever()
+	return &ctx
 }
 
 func (r *DialogStruct) OpenFileDialog() (filePath string, err error) {
 	ctx := r.contextRetriever()
 
 	filePath, err = runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
-		Title:   "Open Text FileApi",
+		Title:   "Open Text OpenedFile",
 		Filters: constants.GetSupportedFileFilters(),
 	})
 	return r.processDialogResults("OpenFileDialog", filePath, err)
@@ -25,7 +31,7 @@ func (r *DialogStruct) SaveFileDialog() (filePath string, err error) {
 	ctx := r.contextRetriever()
 
 	filePath, err = runtime.SaveFileDialog(ctx, runtime.SaveDialogOptions{
-		Title:   "Save FileApi As...",
+		Title:   "Save OpenedFile As...",
 		Filters: constants.GetSupportedFileFilters(),
 	})
 	return r.processDialogResults("SaveFileDialog", filePath, err)
@@ -61,8 +67,8 @@ func (r *DialogStruct) sendErrorDialogReturnedError(dialogName string, err error
 	})
 }
 
-func CreateDialogApi(contextRetriever api.GetContext) api.DialogsApi {
+func CreateDialogApi(contextRetriever *api.ContextRetriever) api.DialogsApi {
 	return &DialogStruct{
-		contextRetriever: contextRetriever,
+		contextRetriever: *contextRetriever,
 	}
 }

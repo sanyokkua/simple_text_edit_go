@@ -5,8 +5,8 @@ export type InformationStruct = {
     FileExtension: string // fileExtension - Extension of the file (last item after . in path if available) (empty for new file)
     FileType: string // fileType based on the extension. Can be the same or different
     FileExists: boolean   // fileExists equal true if this file was opened and not just created
-    FileOpened: boolean   // fileOpened equal true if this file should be shown on the UI now
-    HasChanges: boolean   // hasChanges equal true if this the actual content is not equal to original content
+    FileIsOpened: boolean   // fileOpened equal true if this file should be shown on the UI now
+    FileHasChanges: boolean   // hasChanges equal true if this the actual content is not equal to original content
 }
 export type FileStruct = {
     FileInfo: InformationStruct // fileInfo - contains base file information
