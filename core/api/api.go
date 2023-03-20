@@ -55,6 +55,7 @@ type DialogsApi interface {
 	OpenFileDialog() (filePath string, err error)
 	SaveFileDialog() (filePath string, err error)
 	OkCancelMessageDialog(title string, message string) (clickedBtnName string, err error)
+	InfoMessageDialog(title string, message string) (err error)
 }
 type ApplicationMenu interface {
 	GetContext() *context.Context

@@ -7,11 +7,12 @@ import (
 )
 
 const (
-	EventOnNewFileCreate string = "EventOnNewFileCreate"
-	EventOnFileOpened    string = "EventOnFileOpened"
-	EventOnErrorHappened string = "EventOnErrorHappened"
-	EventOnFileSaved     string = "EventOnFileSaved"
-	EventOnFileClosed    string = "EventOnFileClosed"
+	EventOnNewFileCreate         string = "EventOnNewFileCreate"
+	EventOnFileOpened            string = "EventOnFileOpened"
+	EventOnErrorHappened         string = "EventOnErrorHappened"
+	EventOnFileSaved             string = "EventOnFileSaved"
+	EventOnFileClosed            string = "EventOnFileClosed"
+	EventOnFileInformationChange string = "EventOnFileInformationChange"
 )
 
 type FileTypeInformation struct {
@@ -29,8 +30,8 @@ func createFileTypeInformation(key string, name string, extensions ...string) Fi
 	}
 }
 
-func getFileTypeInformation() []FileTypeInformation {
-	log.Info("getFileTypeInformation")
+func GetFileTypeInformation() []FileTypeInformation {
+	log.Info("GetFileTypeInformation")
 	return []FileTypeInformation{
 		createFileTypeInformation("c", "C", "c", "h", "cc", "hh", "C", "H"),
 		createFileTypeInformation("cmake", "Cmake", "cmake"),
@@ -86,7 +87,7 @@ func createFileFilter(fileTypeInfo *FileTypeInformation) runtime.FileFilter {
 
 func GetSupportedFileFilters() []runtime.FileFilter {
 	log.Info("GetSupportedFileFilters")
-	fileTypes := getFileTypeInformation()
+	fileTypes := GetFileTypeInformation()
 	fileFilters := make([]runtime.FileFilter, 0, 10)
 	for _, value := range fileTypes {
 		fileFilters = append(fileFilters, createFileFilter(&value))
@@ -105,7 +106,7 @@ func GetSupportedFileFilters() []runtime.FileFilter {
 
 func GetExtToLangMapping() *map[string]string {
 	log.Info("GetExtToLangMapping")
-	info := getFileTypeInformation()
+	info := GetFileTypeInformation()
 	mapping := make(map[string]string)
 	for _, fileTypeInfo := range info {
 		for _, ext := range fileTypeInfo.Extensions {

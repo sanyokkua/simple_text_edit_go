@@ -2,6 +2,7 @@ package menu
 
 import (
 	"context"
+	"fmt"
 	"github.com/labstack/gommon/log"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
@@ -32,10 +33,12 @@ func (r *AppMenu) CreateMenu() *menu.Menu {
 	file.AddText("Open", keys.CmdOrCtrl("O"), r.menuFileOpenItemClicked)
 	file.AddText("Save", keys.CmdOrCtrl("S"), r.menuFileSaveItemClicked)
 	file.AddText("Save as", nil, r.menuFileSaveAsItemClicked)
+	file.AddText("Get File Info", nil, r.menuFileGetFileInfoClicked)
 	file.AddText("Close OpenedFile", nil, r.menuFileCloseFileItemClicked)
 	file.AddText("Close Application", keys.CmdOrCtrl("Q"), r.menuFileCloseAppItemClicked)
 
 	edit := appMenu.AddSubmenu("Edit")
+	edit.AddText("Edit File Information", nil, r.menuEditFileInformationClicked)
 	edit.AddText("Sort", keys.CmdOrCtrl("L"), r.menuEditSortItemClicked)
 
 	return appMenu
@@ -230,6 +233,32 @@ func (r *AppMenu) menuFileCloseAppItemClicked(*menu.CallbackData) {
 }
 func (r *AppMenu) menuEditSortItemClicked(*menu.CallbackData) {
 	log.Info("menuEditSortItemClicked")
+}
+
+func (r *AppMenu) menuFileGetFileInfoClicked(*menu.CallbackData) {
+	openedFile := r.applicationApi.FindOpenedFile()
+	var msg string
+	if openedFile == nil {
+		msg = "No opened files found"
+	} else {
+		fileInfo := *openedFile.GetInformation()
+		filePath := fileInfo.GetPath()
+		fileName := fileInfo.GetName()
+		fileExt := fileInfo.GetExt()
+		fileType := fileInfo.GetType()
+		msg = fmt.Sprintf("File path: %s\nFile Name: %s\n File Extension: %s\n File Type: %s",
+			filePath, fileName, fileExt, fileType)
+	}
+
+	err := r.dialogs.InfoMessageDialog("Information about current file", msg)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+}
+
+func (r *AppMenu) menuEditFileInformationClicked(*menu.CallbackData) {
+	r.SendEvent(constants.EventOnFileInformationChange)
 }
 
 func CreateApplicationMenu(contextRetriever *api.ContextRetriever, applicationApi *api.EditorApplication, dialogs *api.DialogsApi) api.ApplicationMenu {

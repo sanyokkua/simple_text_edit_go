@@ -13,12 +13,15 @@ import {FileStruct, InformationStruct} from "./types/types";
 import {
     EventOnErrorHappened,
     EventOnFileClosed,
+    EventOnFileInformationChange,
     EventOnFileOpened,
     EventOnFileSaved,
     EventOnNewFileCreate
 } from "./types/constants";
-import {Button, Menu, Modal} from "semantic-ui-react";
+import {Menu} from "semantic-ui-react";
 import {SemanticCOLORS} from "semantic-ui-react/dist/commonjs/generic";
+import ErrorDialog from "./components/ErrorDialog";
+import {DialogResult, InfoChangeDialog} from "./components/InfoChangeDialog";
 
 type AppState = {
     files: InformationStruct[];
@@ -26,6 +29,7 @@ type AppState = {
     currentLanguage: any | null;
     errorModal: boolean;
     errorText: string;
+    showInfoEdit: boolean;
 };
 
 const COLOR_NEW: SemanticCOLORS = "red"
@@ -41,6 +45,7 @@ class App extends React.Component<any, AppState> {
             currentLanguage: null,
             errorModal: false,
             errorText: "",
+            showInfoEdit: false
         };
         EventsOn(EventOnNewFileCreate, () => {
             console.log("EventOnNewFileCreate")
@@ -61,6 +66,13 @@ class App extends React.Component<any, AppState> {
         EventsOn(EventOnErrorHappened, (error) => {
             console.log("EventOnErrorHappened")
             this.onErrorProcessing(error)
+        });
+        EventsOn(EventOnFileInformationChange, () => {
+            console.log("EventOnFileInformationChange")
+            //this.updateState().catch((e) => this.onErrorProcessing(e))
+            this.setState({
+                showInfoEdit: true
+            });
         });
     }
 
@@ -117,6 +129,14 @@ class App extends React.Component<any, AppState> {
             ).catch((e) => this.onErrorProcessing(e));
     }
 
+    fileInfoChanged(data: DialogResult) {
+        this.setState({
+            showInfoEdit: false
+        });
+        // TODO: add on backend method to update file information
+        console.log(data)
+    }
+
     render() {
         const extensions: any[] = []
         if (this.state.currentLanguage) {
@@ -158,17 +178,13 @@ class App extends React.Component<any, AppState> {
                     }}
                     extensions={extensions}
                 />
-                <Modal dimmer={"blurring"} open={this.state.errorModal} size={'mini'}
-                       onClose={() => this.setState({errorModal: false})}
-                >
-                    <Modal.Header>Error happened </Modal.Header>
-                    <Modal.Content>
-                        {this.state.errorText}
-                    </Modal.Content>
-                    <Modal.Actions>
-                        <Button negative onClick={() => this.setState({errorModal: false})}>Ok</Button>
-                    </Modal.Actions>
-                </Modal>
+                <ErrorDialog errorText={this.state.errorText}
+                             showDialog={this.state.errorModal}
+                             onButtonClicked={() => this.setState({errorModal: false})}/>
+                <InfoChangeDialog showDialog={this.state.showInfoEdit}
+                                  fileInfo={this.state.currentFile.FileInfo}
+                                  onAcceptBtnClicked={(result: DialogResult) => this.fileInfoChanged(result)}
+                                  onCancelBtnClicked={() => this.setState({showInfoEdit: false})}/>
             </div>
         )
     }

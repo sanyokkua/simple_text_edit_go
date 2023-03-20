@@ -13,3 +13,9 @@ export type FileStruct = {
     OriginalContent: string             // originalContent - Content that was read after open
     ActualContent: string             // actualContent - Content that can be changed during the time
 }
+
+export type FileTypeInformation = {
+    Key: string;
+    Name: string;
+    Extensions: string[];
+}

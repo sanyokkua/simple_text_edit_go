@@ -3,3 +3,4 @@ export const EventOnFileOpened: string = "EventOnFileOpened";
 export const EventOnErrorHappened: string = "EventOnErrorHappened";
 export const EventOnFileSaved: string = "EventOnFileSaved";
 export const EventOnFileClosed: string = "EventOnFileClosed";
+export const EventOnFileInformationChange: string = "EventOnFileInformationChange";

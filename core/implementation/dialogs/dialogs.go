@@ -79,6 +79,23 @@ func (r *DialogStruct) sendErrorDialogReturnedError(dialogName string, err error
 	})
 }
 
+func (r *DialogStruct) InfoMessageDialog(title string, message string) (err error) {
+	log.Info("InfoMessageDialog", title, message)
+	ctx := r.contextRetriever()
+
+	_, err = runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+		Type:          runtime.WarningDialog,
+		Title:         title,
+		Message:       message,
+		Buttons:       []string{"Ok"},
+		DefaultButton: "Ok",
+		CancelButton:  "Ok",
+	})
+	log.Info("InfoMessageDialog", err)
+	_, err = r.processDialogResults("MessageDialog", "", err)
+	return err
+}
+
 func CreateDialogApi(contextRetriever *api.ContextRetriever) api.DialogsApi {
 	log.Info("CreateDialogApi", *contextRetriever)
 	return &DialogStruct{
