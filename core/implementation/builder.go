@@ -28,13 +28,13 @@ func (r *ApplicationContextHolderStruct) OnStartup(ctx context.Context) {
 	app := *r.EditorApplication
 	app.CreateEmptyFileAndMakeItOpened()
 }
-func (r *ApplicationContextHolderStruct) OnDomReady(ctx context.Context) {
+func (r *ApplicationContextHolderStruct) OnDomReady(context.Context) {
 	log.Info("(r *ApplicationContextHolderStruct) OnDomReady(ctx context.Context)")
 }
-func (r *ApplicationContextHolderStruct) OnShutdown(ctx context.Context) {
+func (r *ApplicationContextHolderStruct) OnShutdown(context.Context) {
 	log.Info("(r *ApplicationContextHolderStruct) OnShutdown(ctx context.Context)")
 }
-func (r *ApplicationContextHolderStruct) OnBeforeClose(ctx context.Context) (prevent bool) {
+func (r *ApplicationContextHolderStruct) OnBeforeClose(context.Context) (prevent bool) {
 	log.Info("(r *ApplicationContextHolderStruct) OnBeforeClose(ctx context.Context) (prevent bool)")
 	return false
 }

@@ -20,13 +20,13 @@ func getFileNameFromPath(filePath string) string {
 	log.Info("getFileNameFromPath: return", fileName)
 	return fileName
 }
-func getFileExtensionFromPath(filePath string) string {
-	log.Info("getFileExtensionFromPath", filePath)
+func GetFileExtensionFromPath(filePath string) string {
+	log.Info("GetFileExtensionFromPath", filePath)
 	if len(filePath) == 0 {
 		return filePath
 	}
 	fileName := filepath.Ext(filePath)
-	log.Info("getFileExtensionFromPath, return", fileName)
+	log.Info("GetFileExtensionFromPath, return", fileName)
 	return fileName
 }
 func getFileType(fileExtension string) string {
@@ -48,7 +48,7 @@ func CreateInformationFromPath(filePath string) *api.FileInformation {
 	log.Info("CreateInformationFromPath", filePath)
 	timestamp := time.Now().UnixNano()
 	fileName := getFileNameFromPath(filePath)
-	fileExtension := getFileExtensionFromPath(filePath)
+	fileExtension := GetFileExtensionFromPath(filePath)
 	fileType := getFileType(fileExtension)
 	exists := len(filePath) > 0
 

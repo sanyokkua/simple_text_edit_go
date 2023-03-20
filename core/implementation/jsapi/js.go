@@ -5,11 +5,11 @@ import (
 	"simple_text_editor/core/api"
 )
 
-type JsApiStruct struct {
+type JsStruct struct {
 	app api.EditorApplication
 }
 
-func (r *JsApiStruct) GetFilesInformation() []api.FileInformation {
+func (r *JsStruct) GetFilesInformation() []api.FileInformation {
 	log.Info("GetFilesInformation")
 	filesMap := *r.app.GetFilesMap()
 
@@ -22,15 +22,15 @@ func (r *JsApiStruct) GetFilesInformation() []api.FileInformation {
 	log.Info("GetFilesInformation, return", allOpenedFiles)
 	return allOpenedFiles
 }
-func (r *JsApiStruct) FindOpenedFile() api.OpenedFile {
+func (r *JsStruct) FindOpenedFile() api.OpenedFile {
 	log.Info("FindOpenedFile")
 	return r.app.FindOpenedFile()
 }
-func (r *JsApiStruct) ChangeFileStatusToOpened(uniqueIdentifier int64) {
+func (r *JsStruct) ChangeFileStatusToOpened(uniqueIdentifier int64) {
 	log.Info("ChangeFileStatusToOpened", uniqueIdentifier)
 	r.app.ChangeFileStatusToOpened(uniqueIdentifier)
 }
-func (r *JsApiStruct) ChangeFileContent(uniqueIdentifier int64, content string) bool {
+func (r *JsStruct) ChangeFileContent(uniqueIdentifier int64, content string) bool {
 	log.Info("ChangeFileContent", uniqueIdentifier, content)
 	files := *r.app.GetFilesMap()
 
@@ -50,7 +50,7 @@ func (r *JsApiStruct) ChangeFileContent(uniqueIdentifier int64, content string) 
 
 func CreateJsApi(app *api.EditorApplication) api.JsApi {
 	log.Info("CreateJsApi", *app)
-	return &JsApiStruct{
+	return &JsStruct{
 		app: *app,
 	}
 }

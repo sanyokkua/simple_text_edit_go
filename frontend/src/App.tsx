@@ -8,7 +8,7 @@ import {
     ChangeFileStatusToOpened,
     FindOpenedFile,
     GetFilesInformation
-} from "../wailsjs/go/jsapi/JsApiStruct"
+} from "../wailsjs/go/jsapi/JsStruct"
 import {FileStruct, InformationStruct} from "./types/types";
 import {
     EventOnErrorHappened,

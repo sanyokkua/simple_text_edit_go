@@ -124,7 +124,22 @@ func (r *AppMenu) menuFileSaveAsItemClicked(*menu.CallbackData) {
 		return
 	}
 
-	ioError := files.SaveTextToFile(filePath, openedFile.GetActualContent())
+	info := *openedFile.GetInformation()
+
+	extInPath := utils.GetFileExtensionFromPath(filePath)
+	var extToAdd string
+	if len(extInPath) > 0 {
+		extToAdd = ""
+	} else {
+		if len(info.GetExt()) > 0 {
+			extToAdd = info.GetExt()
+		} else {
+			extToAdd = ".txt"
+		}
+	}
+	pathWithExt := filePath + extToAdd
+
+	ioError := files.SaveTextToFile(pathWithExt, openedFile.GetActualContent())
 	if ioError != nil {
 		sendErrorIO(r, ioError)
 		return
@@ -132,7 +147,7 @@ func (r *AppMenu) menuFileSaveAsItemClicked(*menu.CallbackData) {
 
 	infoObj := *openedFile.GetInformation()
 
-	upd := utils.CreateInformationFromPath(filePath)
+	upd := utils.CreateInformationFromPath(pathWithExt)
 	infoObj.SetPath((*upd).GetPath())
 	infoObj.SetName((*upd).GetName())
 	infoObj.SetExt((*upd).GetExt())

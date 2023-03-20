@@ -6,17 +6,17 @@ import (
 	"simple_text_editor/core/implementation/utils"
 )
 
-type EditorApplicationStruct struct {
+type AppStruct struct {
 	retrieveContext api.ContextRetriever
 	dialogs         api.DialogsApi
 	openedFiles     map[int64]*api.OpenedFile
 }
 
-func (receiver *EditorApplicationStruct) GetFilesMap() *map[int64]*api.OpenedFile {
+func (receiver *AppStruct) GetFilesMap() *map[int64]*api.OpenedFile {
 	log.Info("GetFilesMap", receiver.openedFiles)
 	return &receiver.openedFiles
 }
-func (receiver *EditorApplicationStruct) InactivateAllFiles() {
+func (receiver *AppStruct) InactivateAllFiles() {
 	filesMap := *receiver.GetFilesMap()
 	log.Info("InactivateAllFiles", filesMap)
 	for _, openedFile := range filesMap {
@@ -25,7 +25,7 @@ func (receiver *EditorApplicationStruct) InactivateAllFiles() {
 		info.SetIsOpened(false)
 	}
 }
-func (receiver *EditorApplicationStruct) ChangeFileStatusToOpened(uniqueIdentifier int64) {
+func (receiver *AppStruct) ChangeFileStatusToOpened(uniqueIdentifier int64) {
 	files := *receiver.GetFilesMap()
 	log.Info("ChangeFileStatusToOpened", files)
 	fileRef, ok := files[uniqueIdentifier]
@@ -38,7 +38,7 @@ func (receiver *EditorApplicationStruct) ChangeFileStatusToOpened(uniqueIdentifi
 	info := *infoRef
 	info.SetIsOpened(true)
 }
-func (receiver *EditorApplicationStruct) FindOpenedFile() api.OpenedFile {
+func (receiver *AppStruct) FindOpenedFile() api.OpenedFile {
 	files := *receiver.GetFilesMap()
 	log.Info("FindOpenedFile", files)
 
@@ -53,14 +53,14 @@ func (receiver *EditorApplicationStruct) FindOpenedFile() api.OpenedFile {
 	}
 	return nil
 }
-func (receiver *EditorApplicationStruct) CreateEmptyFileAndMakeItOpened() {
+func (receiver *AppStruct) CreateEmptyFileAndMakeItOpened() {
 	log.Info("CreateEmptyFileAndMakeItOpened")
 	emptyFile := utils.CreateEmptyFile()
 	receiver.AddFileToMemory(&emptyFile)
 	info := *emptyFile.GetInformation()
 	receiver.ChangeFileStatusToOpened(info.GetOpenTimeStamp())
 }
-func (receiver *EditorApplicationStruct) AddFileToMemory(openedFile *api.OpenedFile) *api.OpenedFile {
+func (receiver *AppStruct) AddFileToMemory(openedFile *api.OpenedFile) *api.OpenedFile {
 	log.Info("AddFileToMemory", openedFile)
 	if openedFile == nil {
 		log.Warn("Opened file is NIL, nil will be returned")
@@ -73,7 +73,7 @@ func (receiver *EditorApplicationStruct) AddFileToMemory(openedFile *api.OpenedF
 	log.Info("AddFileToMemory", openedFile)
 	return openedFile
 }
-func (receiver *EditorApplicationStruct) IsFileAlreadyOpened(filePath string) bool {
+func (receiver *AppStruct) IsFileAlreadyOpened(filePath string) bool {
 	log.Info("IsFileAlreadyOpened", filePath)
 	if len(filePath) == 0 {
 		log.Info("IsFileAlreadyOpened", false)
@@ -91,7 +91,7 @@ func (receiver *EditorApplicationStruct) IsFileAlreadyOpened(filePath string) bo
 	log.Info("IsFileAlreadyOpened", false)
 	return false
 }
-func (receiver *EditorApplicationStruct) CloseFile(uniqueIdentifier int64) bool {
+func (receiver *AppStruct) CloseFile(uniqueIdentifier int64) bool {
 	log.Info("CloseFile", uniqueIdentifier)
 	filesMap := *receiver.GetFilesMap()
 	_, ok := filesMap[uniqueIdentifier]
@@ -103,7 +103,7 @@ func (receiver *EditorApplicationStruct) CloseFile(uniqueIdentifier int64) bool 
 	log.Info("CloseFile", uniqueIdentifier, true)
 	return true
 }
-func (receiver *EditorApplicationStruct) FindAnyFileInMemory() *api.OpenedFile {
+func (receiver *AppStruct) FindAnyFileInMemory() *api.OpenedFile {
 	log.Info("FindAnyFileInMemory")
 	filesMap := *receiver.GetFilesMap()
 	if len(filesMap) == 0 {
@@ -120,7 +120,7 @@ func (receiver *EditorApplicationStruct) FindAnyFileInMemory() *api.OpenedFile {
 }
 func CreateEditorApplication(retrieveContext *api.ContextRetriever, dialogs *api.DialogsApi) api.EditorApplication {
 	log.Info("CreateEditorApplication")
-	return &EditorApplicationStruct{
+	return &AppStruct{
 		retrieveContext: *retrieveContext,
 		dialogs:         *dialogs,
 		openedFiles:     make(map[int64]*api.OpenedFile),

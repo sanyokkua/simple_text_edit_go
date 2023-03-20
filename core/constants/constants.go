@@ -7,12 +7,11 @@ import (
 )
 
 const (
-	EventOnNewFileCreate            string = "EventOnNewFileCreate"
-	EventOnFileOpened               string = "EventOnFileOpened"
-	EventOnErrorHappened            string = "EventOnErrorHappened"
-	EventOnActiveFileContentUpdated string = "EventOnActiveFileContentUpdated"
-	EventOnFileSaved                string = "EventOnFileSaved"
-	EventOnFileClosed               string = "EventOnFileClosed"
+	EventOnNewFileCreate string = "EventOnNewFileCreate"
+	EventOnFileOpened    string = "EventOnFileOpened"
+	EventOnErrorHappened string = "EventOnErrorHappened"
+	EventOnFileSaved     string = "EventOnFileSaved"
+	EventOnFileClosed    string = "EventOnFileClosed"
 )
 
 type FileTypeInformation struct {
