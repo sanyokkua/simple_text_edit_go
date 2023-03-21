@@ -4,28 +4,34 @@ import {EventsOn} from "../wailsjs/runtime";
 import CodeMirror from '@uiw/react-codemirror';
 import {LanguageName, loadLanguage} from '@uiw/codemirror-extensions-langs';
 import {
-    ActivateFile,
-    GetActiveFile,
-    GetAllFilesInformation,
-    UpdateActiveFileContent
-} from "../wailsjs/go/core/EditorApplication"
-import {FileInformation, FileInMemory} from "./types/types";
+    ChangeFileContent,
+    ChangeFileInformation,
+    ChangeFileStatusToOpened,
+    FindOpenedFile,
+    GetFilesInformation
+} from "../wailsjs/go/jsapi/JsStruct"
+import {FileStruct, InformationStruct} from "./types/types";
 import {
     EventOnErrorHappened,
     EventOnFileClosed,
+    EventOnFileInformationChange,
+    EventOnFileInformationUpdated,
     EventOnFileOpened,
     EventOnFileSaved,
     EventOnNewFileCreate
 } from "./types/constants";
-import {Button, Menu, Modal} from "semantic-ui-react";
+import {Menu} from "semantic-ui-react";
 import {SemanticCOLORS} from "semantic-ui-react/dist/commonjs/generic";
+import ErrorDialog from "./components/ErrorDialog";
+import {DialogResult, InfoChangeDialog} from "./components/InfoChangeDialog";
 
 type AppState = {
-    files: FileInformation[];
-    currentFile: FileInMemory | null;
+    files: InformationStruct[];
+    currentFile: FileStruct;
     currentLanguage: any | null;
     errorModal: boolean;
     errorText: string;
+    showInfoEdit: boolean;
 };
 
 const COLOR_NEW: SemanticCOLORS = "red"
@@ -37,10 +43,11 @@ class App extends React.Component<any, AppState> {
         super(props);
         this.state = {
             files: [],
-            currentFile: null,
+            currentFile: {} as FileStruct,
             currentLanguage: null,
             errorModal: false,
             errorText: "",
+            showInfoEdit: false
         };
         EventsOn(EventOnNewFileCreate, () => {
             console.log("EventOnNewFileCreate")
@@ -62,6 +69,14 @@ class App extends React.Component<any, AppState> {
             console.log("EventOnErrorHappened")
             this.onErrorProcessing(error)
         });
+        EventsOn(EventOnFileInformationUpdated, (msg: string) => {
+            console.log(msg);
+            this.updateState().catch((e) => this.onErrorProcessing(e))
+        });
+        EventsOn(EventOnFileInformationChange, () => {
+            console.log("EventOnFileInformationChange")
+            this.setState({showInfoEdit: true});
+        });
     }
 
     componentDidMount() {
@@ -79,12 +94,18 @@ class App extends React.Component<any, AppState> {
 
     async updateState() {
         try {
-            const files: FileInformation[] = await GetAllFilesInformation()
+            const files: InformationStruct[] = await GetFilesInformation()
+            console.log(files)
             // Sort files by time of open/creation (internal ID of each file)
             files.sort((a, b) => a.OpenTimeStamp - b.OpenTimeStamp)
 
-            const currentFile: FileInMemory = await GetActiveFile()
-            const currentFileLang = loadLanguage(currentFile.Descriptor.Type as LanguageName)
+            const currentFile: FileStruct = await FindOpenedFile()
+            console.log(currentFile)
+
+            let currentFileLang = null;
+            if (currentFile.FileInfo.FileType !== "txt") {
+                currentFileLang = loadLanguage(currentFile.FileInfo.FileType as LanguageName);
+            }
 
             this.setState({
                 files: files,
@@ -97,18 +118,30 @@ class App extends React.Component<any, AppState> {
     }
 
     tabIsChanged(fileId: number) {
-        ActivateFile(fileId).then(() => this.updateState()).catch((e) => this.onErrorProcessing(e))
+        ChangeFileStatusToOpened(fileId)
+            .then(() => this.updateState())
+            .catch((e) => this.onErrorProcessing(e))
     }
 
     contentIsChanged(text: string) {
-        UpdateActiveFileContent(text)
-            .then((hasChanges: boolean) => this.state.currentFile?.Descriptor.IsChanged !== hasChanges)
+        // @ts-ignore
+        let openTimeStamp: number = this.state.currentFile?.FileInfo.OpenTimeStamp;
+        ChangeFileContent(openTimeStamp, text)
+            .then((hasChanges: boolean) => this.state.currentFile?.FileInfo.FileHasChanges !== hasChanges)
             .then((needsUpdate: boolean) => {
                     if (needsUpdate) {
                         return this.updateState().then()
                     }
                 },
             ).catch((e) => this.onErrorProcessing(e));
+    }
+
+    fileInfoChanged(data: DialogResult) {
+        this.setState({
+            showInfoEdit: false
+        });
+        ChangeFileInformation(data).catch((e) => this.onErrorProcessing(e))
+        console.log(data)
     }
 
     render() {
@@ -119,10 +152,19 @@ class App extends React.Component<any, AppState> {
 
         const menuItems = this.state.files.map(openedFile => {
             const key: string = openedFile.OpenTimeStamp.toString();
-            const fileExist: boolean = openedFile.Exists;
-            const fileName: string = fileExist ? openedFile.Name : "*New";
-            const isActive: boolean = openedFile.IsOpenedNow;
-            const hasChanges: boolean = openedFile.IsChanged
+            const fileExist: boolean = openedFile.FileExists;
+            let fileName: string = "";
+            if (openedFile.FileName.trim().length == 0 && !fileExist) {
+                fileName = "*New." + openedFile.FileExtension;
+            } else {
+                if (openedFile.FileHasChanges) {
+                    fileName = "*" + openedFile.FileName + "." + openedFile.FileExtension;
+                } else {
+                    fileName = openedFile.FileName
+                }
+            }
+            const isActive: boolean = openedFile.FileIsOpened;
+            const hasChanges: boolean = openedFile.FileHasChanges
             const color: SemanticCOLORS = fileExist ? hasChanges ? COLOR_HAS_CHANGES : COLOR_NO_CHANGES : COLOR_NEW;
 
             return <Menu.Item key={key} active={isActive} color={color}
@@ -152,17 +194,13 @@ class App extends React.Component<any, AppState> {
                     }}
                     extensions={extensions}
                 />
-                <Modal dimmer={"blurring"} open={this.state.errorModal} size={'mini'}
-                       onClose={() => this.setState({errorModal: false})}
-                >
-                    <Modal.Header>Error happened </Modal.Header>
-                    <Modal.Content>
-                        {this.state.errorText}
-                    </Modal.Content>
-                    <Modal.Actions>
-                        <Button negative onClick={() => this.setState({errorModal: false})}>Ok</Button>
-                    </Modal.Actions>
-                </Modal>
+                <ErrorDialog errorText={this.state.errorText}
+                             showDialog={this.state.errorModal}
+                             onButtonClicked={() => this.setState({errorModal: false})}/>
+                <InfoChangeDialog showDialog={this.state.showInfoEdit}
+                                  fileInfo={this.state.currentFile.FileInfo}
+                                  onAcceptBtnClicked={(result: DialogResult) => this.fileInfoChanged(result)}
+                                  onCancelBtnClicked={() => this.setState({showInfoEdit: false})}/>
             </div>
         )
     }

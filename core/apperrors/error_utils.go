@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/labstack/gommon/log"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -15,16 +16,19 @@ type ErrorNotificationStruct struct {
 }
 
 func CreateError(errorMessage string) error {
+	log.Info("CreateError", errorMessage)
 	return errors.New(errorMessage)
 }
 
 func WrapError(err error, errorMessage string) error {
+	log.Info("WrapError", errorMessage, err)
 	originalErrorMsg := err.Error()
 	newError := CreateError(fmt.Sprintf("Error: %s. Original Error: %s", errorMessage, originalErrorMsg))
 	return newError
 }
 
 func SendErrorEvent(notification *ErrorNotificationStruct) {
+	log.Info("SendErrorEvent", *notification)
 	if notification == nil || len(notification.Destination) == 0 || notification.AppContext == nil {
 		return
 	}
@@ -39,6 +43,6 @@ func SendErrorEvent(notification *ErrorNotificationStruct) {
 		err = CreateError("Unknown error")
 	}
 	msg := err.Error()
-	println(msg)
+	log.Info("SendErrorEvent", msg)
 	runtime.EventsEmit(notification.AppContext, notification.Destination, msg)
 }

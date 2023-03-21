@@ -3,17 +3,20 @@ package main
 import (
 	"embed"
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"log"
-	"simple_text_editor/core"
+	"simple_text_editor/core/implementation"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
-	editorApp := core.CreateNewApplication()
+	app := *implementation.CreateApplicationContextHolderApi()
+	jsApi := app.GetJsApi()
+	menu := app.GetApplicationMenu()
+	newDefaultLogger := logger.NewDefaultLogger()
 
 	err := wails.Run(&options.App{
 		Title:  "Simple Text Editor",
@@ -22,17 +25,21 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		OnStartup: editorApp.Startup,
-		Menu:      editorApp.CreateMenu(),
+		OnStartup:     app.OnStartup,
+		OnDomReady:    app.OnDomReady,
+		OnShutdown:    app.OnShutdown,
+		OnBeforeClose: app.OnBeforeClose,
+		Menu:          menu.CreateMenu(),
 		Bind: []interface{}{
-			editorApp,
+			jsApi,
 		},
 		Debug: options.Debug{
 			OpenInspectorOnStartup: true,
 		},
+		Logger: newDefaultLogger,
 	})
 
 	if err != nil {
-		log.Fatal(err.Error())
+		newDefaultLogger.Fatal(err.Error())
 	}
 }

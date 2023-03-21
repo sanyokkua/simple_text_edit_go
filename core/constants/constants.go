@@ -2,16 +2,18 @@ package constants
 
 import (
 	"fmt"
+	"github.com/labstack/gommon/log"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 const (
-	EventOnNewFileCreate            string = "EventOnNewFileCreate"
-	EventOnFileOpened               string = "EventOnFileOpened"
-	EventOnErrorHappened            string = "EventOnErrorHappened"
-	EventOnActiveFileContentUpdated string = "EventOnActiveFileContentUpdated"
-	EventOnFileSaved                string = "EventOnFileSaved"
-	EventOnFileClosed               string = "EventOnFileClosed"
+	EventOnNewFileCreate          string = "EventOnNewFileCreate"
+	EventOnFileOpened             string = "EventOnFileOpened"
+	EventOnErrorHappened          string = "EventOnErrorHappened"
+	EventOnFileSaved              string = "EventOnFileSaved"
+	EventOnFileClosed             string = "EventOnFileClosed"
+	EventOnFileInformationChange  string = "EventOnFileInformationChange"
+	EventOnFileInformationUpdated string = "EventOnFileInformationUpdated"
 )
 
 type FileTypeInformation struct {
@@ -21,6 +23,7 @@ type FileTypeInformation struct {
 }
 
 func createFileTypeInformation(key string, name string, extensions ...string) FileTypeInformation {
+	log.Info("createFileTypeInformation", key, name, extensions)
 	return FileTypeInformation{
 		Key:        key,
 		Name:       name,
@@ -28,7 +31,8 @@ func createFileTypeInformation(key string, name string, extensions ...string) Fi
 	}
 }
 
-func getFileTypeInformation() []FileTypeInformation {
+func GetFileTypeInformation() []FileTypeInformation {
+	log.Info("GetFileTypeInformation")
 	return []FileTypeInformation{
 		createFileTypeInformation("c", "C", "c", "h", "cc", "hh", "C", "H"),
 		createFileTypeInformation("cmake", "Cmake", "cmake"),
@@ -65,15 +69,18 @@ func getFileTypeInformation() []FileTypeInformation {
 		createFileTypeInformation("velocity", "Velocity", "vm", "vt"),
 		createFileTypeInformation("xml", "Xml", "xml"),
 		createFileTypeInformation("yaml", "Yaml", "yaml", "yml"),
+		createFileTypeInformation("txt", "Plain Text", "txt"),
 	}
 }
 
 func createFileFilter(fileTypeInfo *FileTypeInformation) runtime.FileFilter {
+	log.Info("createFileFilter", *fileTypeInfo)
 	typePattern := "*.%s;"
 	pattern := ""
 	for _, value := range fileTypeInfo.Extensions {
 		pattern += fmt.Sprintf(typePattern, value)
 	}
+	log.Info("createFileFilter", pattern)
 	return runtime.FileFilter{
 		DisplayName: fileTypeInfo.Name,
 		Pattern:     pattern,
@@ -81,7 +88,8 @@ func createFileFilter(fileTypeInfo *FileTypeInformation) runtime.FileFilter {
 }
 
 func GetSupportedFileFilters() []runtime.FileFilter {
-	fileTypes := getFileTypeInformation()
+	log.Info("GetSupportedFileFilters")
+	fileTypes := GetFileTypeInformation()
 	fileFilters := make([]runtime.FileFilter, 0, 10)
 	for _, value := range fileTypes {
 		fileFilters = append(fileFilters, createFileFilter(&value))
@@ -90,17 +98,23 @@ func GetSupportedFileFilters() []runtime.FileFilter {
 		DisplayName: "Plain Text",
 		Pattern:     "*.txt",
 	})
-
+	fileFilters = append(fileFilters, runtime.FileFilter{
+		DisplayName: "Any File",
+		Pattern:     "",
+	})
+	log.Info("GetSupportedFileFilters, return", fileFilters)
 	return fileFilters
 }
 
 func GetExtToLangMapping() *map[string]string {
-	info := getFileTypeInformation()
+	log.Info("GetExtToLangMapping")
+	info := GetFileTypeInformation()
 	mapping := make(map[string]string)
 	for _, fileTypeInfo := range info {
 		for _, ext := range fileTypeInfo.Extensions {
 			mapping[ext] = fileTypeInfo.Key
 		}
 	}
+	log.Info("GetExtToLangMapping, return", mapping)
 	return &mapping
 }
