@@ -5,6 +5,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import {LanguageName, loadLanguage} from '@uiw/codemirror-extensions-langs';
 import {
     ChangeFileContent,
+    ChangeFileInformation,
     ChangeFileStatusToOpened,
     FindOpenedFile,
     GetFilesInformation
@@ -14,6 +15,7 @@ import {
     EventOnErrorHappened,
     EventOnFileClosed,
     EventOnFileInformationChange,
+    EventOnFileInformationUpdated,
     EventOnFileOpened,
     EventOnFileSaved,
     EventOnNewFileCreate
@@ -67,12 +69,13 @@ class App extends React.Component<any, AppState> {
             console.log("EventOnErrorHappened")
             this.onErrorProcessing(error)
         });
+        EventsOn(EventOnFileInformationUpdated, (msg: string) => {
+            console.log(msg);
+            this.updateState().catch((e) => this.onErrorProcessing(e))
+        });
         EventsOn(EventOnFileInformationChange, () => {
             console.log("EventOnFileInformationChange")
-            //this.updateState().catch((e) => this.onErrorProcessing(e))
-            this.setState({
-                showInfoEdit: true
-            });
+            this.setState({showInfoEdit: true});
         });
     }
 
@@ -98,7 +101,11 @@ class App extends React.Component<any, AppState> {
 
             const currentFile: FileStruct = await FindOpenedFile()
             console.log(currentFile)
-            const currentFileLang = loadLanguage(currentFile.FileInfo.FileType as LanguageName)
+
+            let currentFileLang = null;
+            if (currentFile.FileInfo.FileType !== "txt") {
+                currentFileLang = loadLanguage(currentFile.FileInfo.FileType as LanguageName);
+            }
 
             this.setState({
                 files: files,
@@ -133,7 +140,7 @@ class App extends React.Component<any, AppState> {
         this.setState({
             showInfoEdit: false
         });
-        // TODO: add on backend method to update file information
+        ChangeFileInformation(data).catch((e) => this.onErrorProcessing(e))
         console.log(data)
     }
 
@@ -146,7 +153,16 @@ class App extends React.Component<any, AppState> {
         const menuItems = this.state.files.map(openedFile => {
             const key: string = openedFile.OpenTimeStamp.toString();
             const fileExist: boolean = openedFile.FileExists;
-            const fileName: string = fileExist ? openedFile.FileName : "*New";
+            let fileName: string = "";
+            if (openedFile.FileName.trim().length == 0 && !fileExist) {
+                fileName = "*New." + openedFile.FileExtension;
+            } else {
+                if (openedFile.FileHasChanges) {
+                    fileName = "*" + openedFile.FileName + "." + openedFile.FileExtension;
+                } else {
+                    fileName = openedFile.FileName
+                }
+            }
             const isActive: boolean = openedFile.FileIsOpened;
             const hasChanges: boolean = openedFile.FileHasChanges
             const color: SemanticCOLORS = fileExist ? hasChanges ? COLOR_HAS_CHANGES : COLOR_NO_CHANGES : COLOR_NEW;

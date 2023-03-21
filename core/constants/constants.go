@@ -7,12 +7,13 @@ import (
 )
 
 const (
-	EventOnNewFileCreate         string = "EventOnNewFileCreate"
-	EventOnFileOpened            string = "EventOnFileOpened"
-	EventOnErrorHappened         string = "EventOnErrorHappened"
-	EventOnFileSaved             string = "EventOnFileSaved"
-	EventOnFileClosed            string = "EventOnFileClosed"
-	EventOnFileInformationChange string = "EventOnFileInformationChange"
+	EventOnNewFileCreate          string = "EventOnNewFileCreate"
+	EventOnFileOpened             string = "EventOnFileOpened"
+	EventOnErrorHappened          string = "EventOnErrorHappened"
+	EventOnFileSaved              string = "EventOnFileSaved"
+	EventOnFileClosed             string = "EventOnFileClosed"
+	EventOnFileInformationChange  string = "EventOnFileInformationChange"
+	EventOnFileInformationUpdated string = "EventOnFileInformationUpdated"
 )
 
 type FileTypeInformation struct {
@@ -68,6 +69,7 @@ func GetFileTypeInformation() []FileTypeInformation {
 		createFileTypeInformation("velocity", "Velocity", "vm", "vt"),
 		createFileTypeInformation("xml", "Xml", "xml"),
 		createFileTypeInformation("yaml", "Yaml", "yaml", "yml"),
+		createFileTypeInformation("txt", "Plain Text", "txt"),
 	}
 }
 

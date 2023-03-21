@@ -32,14 +32,13 @@ func (r *DialogStruct) OpenFileDialog() (filePath string, err error) {
 	log.Info("OpenFileDialog", filePath, err)
 	return r.processDialogResults("OpenFileDialog", filePath, err)
 }
-func (r *DialogStruct) SaveFileDialog() (filePath string, err error) {
+func (r *DialogStruct) SaveFileDialog(defaultFileName string) (filePath string, err error) {
 	log.Info("SaveFileDialog")
 	ctx := r.contextRetriever()
 
 	filePath, err = runtime.SaveFileDialog(ctx, runtime.SaveDialogOptions{
-		Title: "Save OpenedFile As...",
-		//Filters:         constants.GetSupportedFileFilters(),
-		DefaultFilename: "NewFile.txt",
+		Title:           "Save OpenedFile As...",
+		DefaultFilename: defaultFileName,
 	})
 	log.Info("SaveFileDialog", filePath, err)
 	return r.processDialogResults("SaveFileDialog", filePath, err)

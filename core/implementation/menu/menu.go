@@ -116,18 +116,18 @@ func (r *AppMenu) menuFileSaveItemClicked(data *menu.CallbackData) {
 }
 func (r *AppMenu) menuFileSaveAsItemClicked(*menu.CallbackData) {
 	log.Info("menuFileSaveAsItemClicked")
-	filePath, dialogErr := r.dialogs.SaveFileDialog()
-	if dialogErr != nil {
-		return
-	}
-
 	openedFile := r.applicationApi.FindOpenedFile()
 	if openedFile == nil {
 		sendErrorGenericMessage(r, "Active file is not found. Internal error of app.")
 		return
 	}
-
 	info := *openedFile.GetInformation()
+
+	defaultName := info.GetName() + "." + info.GetExt()
+	filePath, dialogErr := r.dialogs.SaveFileDialog(defaultName)
+	if dialogErr != nil {
+		return
+	}
 
 	extInPath := utils.GetFileExtensionFromPath(filePath)
 	var extToAdd string

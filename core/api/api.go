@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/menu"
+	"simple_text_editor/core/constants"
 )
 
 type ContextRetriever func() (ctx context.Context)
@@ -53,7 +54,7 @@ type EditorApplication interface {
 type DialogsApi interface {
 	GetContext() *context.Context
 	OpenFileDialog() (filePath string, err error)
-	SaveFileDialog() (filePath string, err error)
+	SaveFileDialog(defaultFileName string) (filePath string, err error)
 	OkCancelMessageDialog(title string, message string) (clickedBtnName string, err error)
 	InfoMessageDialog(title string, message string) (err error)
 }
@@ -67,6 +68,8 @@ type JsApi interface {
 	FindOpenedFile() OpenedFile
 	ChangeFileStatusToOpened(uniqueIdentifier int64)
 	ChangeFileContent(uniqueIdentifier int64, content string) bool
+	ChangeFileInformation(dialResults DialogResult)
+	GetFileTypeInformation() []constants.FileTypeInformation
 }
 type ApplicationContextHolderApi interface {
 	GetContext() context.Context
@@ -80,4 +83,10 @@ type ApplicationContextHolderApi interface {
 	GetApplicationMenu() ApplicationMenu
 	GetEditorApplicationApi() EditorApplication
 	GetJsApi() JsApi
+}
+
+type DialogResult struct {
+	FileName string
+	FileType string
+	FileExt  string
 }

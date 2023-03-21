@@ -6,12 +6,20 @@ export function ChangeFileContent(arg1, arg2) {
   return window['go']['jsapi']['JsStruct']['ChangeFileContent'](arg1, arg2);
 }
 
+export function ChangeFileInformation(arg1) {
+  return window['go']['jsapi']['JsStruct']['ChangeFileInformation'](arg1);
+}
+
 export function ChangeFileStatusToOpened(arg1) {
   return window['go']['jsapi']['JsStruct']['ChangeFileStatusToOpened'](arg1);
 }
 
 export function FindOpenedFile() {
   return window['go']['jsapi']['JsStruct']['FindOpenedFile']();
+}
+
+export function GetFileTypeInformation() {
+  return window['go']['jsapi']['JsStruct']['GetFileTypeInformation']();
 }
 
 export function GetFilesInformation() {

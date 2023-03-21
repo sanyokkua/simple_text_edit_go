@@ -69,7 +69,7 @@ func CreateApplicationContextHolderApi() *api.ApplicationContextHolderApi {
 
 	dialogApi := dialogs.CreateDialogApi(&retriever)
 	app := editor.CreateEditorApplication(&retriever, &dialogApi)
-	jsApi := jsapi.CreateJsApi(&app)
+	jsApi := jsapi.CreateJsApi(&app, &retriever)
 	appMenu := menu.CreateApplicationMenu(&retriever, &app, &dialogApi)
 
 	appContextHolder.DialogsApi = &dialogApi

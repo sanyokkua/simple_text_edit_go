@@ -1,28 +1,7 @@
 import React from "react"
 import {Button, DropdownItemProps, DropdownProps, Form, Modal} from "semantic-ui-react";
 import {FileTypeInformation, InformationStruct} from "../types/types";
-
-const TMP: FileTypeInformation[] = [
-    {
-        Key: "json",
-        Name: "Json",
-        Extensions: ["json"]
-    },
-    {
-        Key: "javascript",
-        Name: "Javascript",
-        Extensions: ["js", "jsx"]
-    },
-    {
-        Key: "python",
-        Name: "Python",
-        Extensions: ["py", "pyi"]
-    },
-    {
-        Key: "txt",
-        Name: "Plain Text",
-        Extensions: ["txt"]
-    }]
+import {GetFileTypeInformation} from "../../wailsjs/go/jsapi/JsStruct";
 
 export type DialogResult = {
     FileName: string | null | undefined;
@@ -115,35 +94,10 @@ export class InfoChangeDialog extends React.Component<DialogProps, DialogState> 
     }
 
     componentDidMount() {
-        this.setState({
-            fileTypeInfo: TMP, //TODO: replace with real data loading
-        }, () => this.updateTypesAndExtensions());
-
-    }
-
-    updateTypesAndExtensions() {
-        const fileTypes: DropdownItemProps[] = mapInfoToTypeList(this.state.fileTypeInfo);
-        const fileExtensions: DropdownItemProps[] = mapInfoToExtensionList(this.state.selectedType, this.state.fileTypeInfo);
-
-        let extensionValue: string | null | undefined = null;
-        if (fileExtensions.length === 1) {
-            extensionValue = fileExtensions[0].value as string
-        }
-
-        this.setState({
-            dropdownFileTypes: fileTypes,
-            dropdownFileExtensions: fileExtensions,
-            selectedExtension: extensionValue,
-        });
-    }
-
-    onReturnResults() {
-        const res: DialogResult = {
-            FileName: this.state.selectedName,
-            FileType: this.state.selectedType,
-            FileExt: this.state.selectedExtension,
-        }
-        this.props.onAcceptBtnClicked(res)
+        GetFileTypeInformation()
+            .then((data: FileTypeInformation[]) => {
+                this.setState({fileTypeInfo: data}, () => this.updateTypesAndExtensions());
+            }).catch((e) => console.log(e));
     }
 
     validateForm() {
@@ -172,6 +126,28 @@ export class InfoChangeDialog extends React.Component<DialogProps, DialogState> 
         this.setState({isFormValid: isWholeFormValid, isNameValid: isValidName});
     }
 
+    updateTypesAndExtensions() {
+        const typeInformation = this.state.fileTypeInfo;
+        const selectedType = this.state.selectedType;
+
+        const fileTypes: DropdownItemProps[] = mapInfoToTypeList(typeInformation);
+        const fileExtensions: DropdownItemProps[] = mapInfoToExtensionList(selectedType, typeInformation);
+
+        if (fileExtensions.length == 1) {
+            this.setState({
+                dropdownFileTypes: fileTypes,
+                dropdownFileExtensions: fileExtensions,
+                selectedExtension: fileExtensions[0].value as string
+            }, () => this.validateForm());
+            return;
+        }
+
+        this.setState({
+            dropdownFileTypes: fileTypes,
+            dropdownFileExtensions: fileExtensions,
+        }, () => this.validateForm());
+    }
+
     onFileNameChanged(name: string) {
         this.setState({
             selectedName: name
@@ -184,7 +160,6 @@ export class InfoChangeDialog extends React.Component<DialogProps, DialogState> 
             selectedExtension: null,
         }, () => {
             this.updateTypesAndExtensions();
-            this.validateForm();
         });
     }
 
@@ -192,16 +167,26 @@ export class InfoChangeDialog extends React.Component<DialogProps, DialogState> 
         this.setState({
             selectedExtension: extension.value as string,
         }, () => {
-            this.updateTypesAndExtensions();
             this.validateForm();
         });
     }
 
+    onReturnResults() {
+        const res: DialogResult = {
+            FileName: this.state.selectedName,
+            FileType: this.state.selectedType,
+            FileExt: this.state.selectedExtension,
+        }
+        this.props.onAcceptBtnClicked(res)
+    }
+
     render() {
-        // TODO: what if display extension selector only if file type has more than 1 extension??
         const fileName: string = this.props.fileInfo?.FileName || "";
         const fileType: string = this.props.fileInfo?.FileType || "";
         const fileExt: string = this.props.fileInfo?.FileExtension || "";
+        const dropdownFileExtensions = this.state.dropdownFileExtensions;
+        const selectedType = this.state.selectedType || "";
+        const showExtForm: boolean = selectedType.length > 0 && dropdownFileExtensions.length > 1;
 
         return (
             <Modal dimmer={"blurring"} open={this.props.showDialog} size={'large'}>
@@ -220,6 +205,7 @@ export class InfoChangeDialog extends React.Component<DialogProps, DialogState> 
 
                         <p>Current type: <b>{fileType}</b></p>
                         <p>Change of type will change syntax highlight language</p>
+                        <p>Change of extension only possible after selecting type</p>
                         <Form.Group>
                             <Form.Select label={"Change File Type"}
                                          options={this.state.dropdownFileTypes}
@@ -227,18 +213,17 @@ export class InfoChangeDialog extends React.Component<DialogProps, DialogState> 
                             />
                         </Form.Group>
 
-                        <p>Change of extension only possible after selecting type</p>
-                        <p>Current extension is: <b>{fileExt}</b></p>
-                        <Form.Group>
-                            <Form.Select label={"Change File Type"}
-                                         disabled={this.state.dropdownFileExtensions.length === 0}
-                                         options={this.state.dropdownFileExtensions}
-                                         placeholder={this.state.selectedExtension || undefined}
-                                         defaultSelectedLabel={this.state.selectedExtension || undefined}
-                                         defaultValue={this.state.selectedExtension || undefined}
-                                         onChange={(event, data) => this.onExtensionChanged(data)}
-                            />
-                        </Form.Group>
+                        {showExtForm && <div>
+                            <p>Current extension is: <b>{fileExt}</b></p>
+                            <Form.Group>
+                                <Form.Select label={"Change File Type"}
+                                             disabled={dropdownFileExtensions.length === 0}
+                                             options={dropdownFileExtensions}
+                                             placeholder={this.state.selectedExtension || undefined}
+                                             onChange={(event, data) => this.onExtensionChanged(data)}
+                                />
+                            </Form.Group>
+                        </div>}
                     </Form>
                 </Modal.Content>
                 <Modal.Actions>
