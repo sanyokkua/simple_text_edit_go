@@ -1,8 +1,11 @@
-export const EventOnNewFileCreate: string = "EventOnNewFileCreate";
+export const EventOnInternalWarning: string = "EventOnInternalWarning";
+export const EventOnInternalError: string = "EventOnInternalError";
+export const EventOnNewFileCreated: string = "EventOnNewFileCreated";
 export const EventOnFileOpened: string = "EventOnFileOpened";
-export const EventOnErrorHappened: string = "EventOnErrorHappened";
 export const EventOnFileSaved: string = "EventOnFileSaved";
 export const EventOnFileClosed: string = "EventOnFileClosed";
-export const EventOnFileInformationChange: string = "EventOnFileInformationChange";
-
+export const EventOnFileInformationEdit: string = "EventOnFileInformationEdit";
+export const EventOnFileInformationDisplay: string = "EventOnFileInformationDisplay";
 export const EventOnFileInformationUpdated: string = "EventOnFileInformationUpdated";
+export const EventOnFileIsSwitched: string = "EventOnFileIsSwitched";
+export const EventOnFileContentIsUpdated: string = "EventOnFileContentIsUpdated";
