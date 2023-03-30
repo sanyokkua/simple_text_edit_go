@@ -22,13 +22,13 @@ export type FileInfoStruct = {
     Changed: boolean;
 };
 
-export type FileTypesJson = {
-    Key: string;
-    Name: string;
-    Extensions: string[];
-};
+export type FileInfoUpdateStruct = {
+    Id: number;
+    Type: string;
+    Extension: string;
+}
 
-export type KeyValuePair = {
+export type KeyValuePairStruct = {
     Key: string;
     Value: string;
 };

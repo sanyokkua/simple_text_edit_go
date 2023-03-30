@@ -2,6 +2,7 @@ package files
 
 import (
 	"simple_text_editor/core/v2/api"
+	"simple_text_editor/core/v2/components/typemngr"
 	"testing"
 )
 
@@ -34,17 +35,23 @@ func TestCreateNewFileEmpty(t *testing.T) {
 }
 
 func TestCreateNewFileWithData(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
+
 	originalContent := "Original Content of file"
 	fileName := "file.py"
 	filePath := "/test/path/" + fileName
 
-	fileWithData := CreateNewFileWithData(filePath, originalContent, extensions)
+	fileWithData := CreateNewFileWithData(filePath, originalContent, manager)
 
 	if fileWithData.New {
 		t.Errorf("New file should have false value in New field for existing file")

@@ -2,9 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/labstack/gommon/log"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"os"
 	"simple_text_editor/core/v2/api"
@@ -38,37 +36,4 @@ func LoadFileTypesJson(path string) []api.FileTypesJsonStruct {
 	}
 
 	return typesJsons
-}
-
-func GetSupportedFileFilters(extensions map[string]api.FileTypesJsonStruct) []runtime.FileFilter {
-	log.Info("GetSupportedFileFilters")
-
-	fileFilters := make([]runtime.FileFilter, 0, len(extensions))
-	for _, value := range extensions {
-		fileFilters = append(fileFilters, createFileFilter(&value))
-	}
-	fileFilters = append(fileFilters, runtime.FileFilter{
-		DisplayName: "Plain Text",
-		Pattern:     "*.txt",
-	})
-	fileFilters = append(fileFilters, runtime.FileFilter{
-		DisplayName: "Any File",
-		Pattern:     "",
-	})
-	log.Info("GetSupportedFileFilters, return", fileFilters)
-	return fileFilters
-}
-
-func createFileFilter(fileTypeInfo *api.FileTypesJsonStruct) runtime.FileFilter {
-	log.Info("createFileFilter", *fileTypeInfo)
-	typePattern := "*.%s;"
-	pattern := ""
-	for _, value := range fileTypeInfo.Extensions {
-		pattern += fmt.Sprintf(typePattern, value)
-	}
-	log.Info("createFileFilter", pattern)
-	return runtime.FileFilter{
-		DisplayName: fileTypeInfo.Name,
-		Pattern:     pattern,
-	}
 }

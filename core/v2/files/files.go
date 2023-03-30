@@ -16,22 +16,23 @@ func CreateNewFileEmpty() api.FileStruct {
 	}
 }
 
-func CreateNewFileWithData(path string, originalContent string, extensions map[string]api.FileTypesJsonStruct) api.FileStruct {
+func CreateNewFileWithData(path string, originalContent string, typeManager api.ITypeManager) api.FileStruct {
 	fileName := utils.GetFileNameFromPath(path)
 	fileExtension := utils.GetFileExtensionFromPath(path)
-	fileType := utils.GetFileType(fileExtension, extensions)
+	fileType := typeManager.GetTypeKeyByExtension(fileExtension)
 	isNew := len(path) == 0
 
 	return api.FileStruct{
-		Id:             idProvider.GetId(),
-		Path:           path,
-		Name:           fileName,
-		Extension:      fileExtension,
-		Type:           fileType,
-		InitialContent: originalContent,
-		ActualContent:  originalContent,
-		New:            isNew,
-		Opened:         false,
-		Changed:        false,
+		Id:               idProvider.GetId(),
+		Path:             path,
+		Name:             fileName,
+		Extension:        fileExtension,
+		InitialExtension: fileExtension,
+		Type:             fileType,
+		InitialContent:   originalContent,
+		ActualContent:    originalContent,
+		New:              isNew,
+		Opened:           false,
+		Changed:          false,
 	}
 }

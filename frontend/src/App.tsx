@@ -7,7 +7,6 @@ import {
     EventOnFileClosed,
     EventOnFileContentIsUpdated,
     EventOnFileInformationDisplay,
-    EventOnFileInformationEdit,
     EventOnFileInformationUpdated,
     EventOnFileIsSwitched,
     EventOnFileOpened,
@@ -21,14 +20,14 @@ import TabBar from "./components/TabBar";
 import {NotificationType} from "./types/frontend";
 import AppModalInfoDialog from "./components/AppModalInfoDialog";
 import {Message} from "semantic-ui-react";
+import FileInfoEdit from "./components/FileInfoEdit";
 
 type AppState = {
     openedFiles: FileInfoStruct[];
     currentFile: FileStruct | null;
     notificationType: NotificationType;
     notificationMessage: string;
-    showFileInfoDisplayModal: boolean;
-    showFileInfoEditModal: boolean;
+    showFileInfoModal: boolean;
 };
 
 class App extends React.Component<any, AppState> {
@@ -39,8 +38,7 @@ class App extends React.Component<any, AppState> {
             currentFile: null,
             notificationType: NotificationType.NONE,
             notificationMessage: "",
-            showFileInfoDisplayModal: false,
-            showFileInfoEditModal: false,
+            showFileInfoModal: false,
         };
 
         EventsOn(EventOnInternalWarning, (eventData) => this.onEventOnInternalWarning(eventData));
@@ -51,8 +49,7 @@ class App extends React.Component<any, AppState> {
         EventsOn(EventOnFileSaved, (eventData) => this.updateEditorState());
         EventsOn(EventOnFileClosed, (eventData) => this.updateEditorState());
 
-        EventsOn(EventOnFileInformationEdit, (eventData) => this.setState({showFileInfoEditModal: true}));
-        EventsOn(EventOnFileInformationDisplay, (eventData) => this.setState({showFileInfoDisplayModal: true}));
+        EventsOn(EventOnFileInformationDisplay, (eventData) => this.setState({showFileInfoModal: true}));
         EventsOn(EventOnFileInformationUpdated, (eventData) => this.updateEditorState());
 
         EventsOn(EventOnFileIsSwitched, (eventData) => this.updateEditorState());
@@ -106,6 +103,8 @@ class App extends React.Component<any, AppState> {
         return (
             <div>
                 {showEditor ? editorContent : noContent}
+                <FileInfoEdit currentFile={this.state.currentFile} open={this.state.showFileInfoModal}
+                              onClose={() => this.setState({showFileInfoModal: false})}/>
                 <AppModalInfoDialog header={this.state.notificationType}
                                     message={this.state.notificationMessage}
                                     show={showInfoDialog}

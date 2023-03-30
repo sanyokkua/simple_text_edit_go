@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"simple_text_editor/core/v2/api"
+	"simple_text_editor/core/v2/components/typemngr"
 	"simple_text_editor/core/v2/utils"
 	"strconv"
 	"testing"
@@ -11,14 +12,19 @@ import (
 )
 
 func TestApplicationCreation(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
 
-	createdEditor := CreateEditor(&extensions)
+	createdEditor := CreateEditor(manager)
 
 	files := createdEditor.GetAllFilesInfo()
 	if files == nil {
@@ -45,14 +51,19 @@ func TestApplicationCreationPanic(t *testing.T) {
 }
 
 func TestApplicationCreateFile(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
 
-	createdEditor := CreateEditor(&extensions)
+	createdEditor := CreateEditor(manager)
 	firstFile, _ := createdEditor.GetOpenedFile()
 
 	path := createTestFile()
@@ -99,14 +110,18 @@ func TestApplicationCreateFile(t *testing.T) {
 }
 
 func TestApplicationFileContentChanges(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
-
-	createdEditor := CreateEditor(&extensions)
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
+	createdEditor := CreateEditor(manager)
 
 	file, getOpenedFileErr := createdEditor.GetOpenedFile()
 	if getOpenedFileErr != nil {
@@ -130,14 +145,19 @@ func TestApplicationFileContentChanges(t *testing.T) {
 }
 
 func TestApplicationInactivateAllFiles(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
 
-	createdEditor := CreateEditor(&extensions)
+	createdEditor := CreateEditor(manager)
 	time.Sleep(5 * time.Millisecond)
 	// Creation of file can be too fast so file with the same id (time used for id) will not be created. Sleep is used to fix it
 	crErr1 := createdEditor.CreateNewFileInEditor()
@@ -188,14 +208,19 @@ func TestApplicationInactivateAllFiles(t *testing.T) {
 }
 
 func TestApplicationCloseFile(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
 
-	createdEditor := CreateEditor(&extensions)
+	createdEditor := CreateEditor(manager)
 	time.Sleep(5 * time.Millisecond)
 
 	crErr1 := createdEditor.CreateNewFileInEditor()
@@ -319,14 +344,19 @@ func TestApplicationCloseFile(t *testing.T) {
 }
 
 func TestApplicationGetFilesInfo(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
 
-	createdEditor := CreateEditor(&extensions)
+	createdEditor := CreateEditor(manager)
 	newFile, newFileErr := createdEditor.GetOpenedFile()
 	if newFileErr != nil {
 		t.Fatalf("Failed to get new file from editor")
@@ -384,7 +414,7 @@ func TestApplicationGetFilesInfo(t *testing.T) {
 		} else if fileInfoStruct.Id == idOfTheTstFile {
 			name := utils.GetFileNameFromPath(testFilePath)
 			ext := utils.GetFileExtensionFromPath(testFilePath)
-			fileType := utils.GetFileType(ext, extensions)
+			fileType := manager.GetTypeKeyByExtension(ext)
 
 			if testFilePath != fileInfoStruct.Path {
 				t.Fatalf("Path should not be empty for opened test file")
@@ -414,14 +444,19 @@ func TestApplicationGetFilesInfo(t *testing.T) {
 }
 
 func TestApplicationSaveFile(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
 
-	createdEditor := CreateEditor(&extensions)
+	createdEditor := CreateEditor(manager)
 
 	openedFile, err := createdEditor.GetOpenedFile()
 	if err != nil {
@@ -440,7 +475,6 @@ func TestApplicationSaveFile(t *testing.T) {
 
 	updInfErr := createdEditor.UpdateFileInformation(openedFile.Id, api.FileInfoUpdateStruct{
 		Id:        openedFile.Id,
-		Name:      "test",
 		Type:      "python",
 		Extension: "py",
 	})
@@ -473,7 +507,7 @@ func TestApplicationSaveFile(t *testing.T) {
 	if openedFile.Path != newFilePath {
 		t.Fatalf("File path should be equal to %s, Actual: %s", newFilePath, openedFile.Path)
 	}
-	if openedFile.Type != "python" {
+	if openedFile.Type != "Python" {
 		t.Fatalf("File type should be equal to python, Actual: %s", openedFile.Type)
 	}
 	if openedFile.Extension != ".py" {
@@ -491,14 +525,19 @@ func TestApplicationSaveFile(t *testing.T) {
 }
 
 func TestApplicationUpdateFileInfo(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
+	f2 := api.FileTypesJsonStruct{
+		Key:        "java",
+		Name:       "Java",
+		Extensions: []string{"java", "jdk"},
+	}
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
 
-	createdEditor := CreateEditor(&extensions)
+	createdEditor := CreateEditor(manager)
 
 	testFilePath := createTestFile()
 	openErr := createdEditor.OpenFile(testFilePath)
@@ -519,7 +558,6 @@ func TestApplicationUpdateFileInfo(t *testing.T) {
 
 	updInfErr := createdEditor.UpdateFileInformation(openedFile.Id, api.FileInfoUpdateStruct{
 		Id:        openedFile.Id,
-		Name:      "newTestNameThaIsNotExpected",
 		Type:      "Plain Text",
 		Extension: ".txt",
 	})
@@ -527,10 +565,7 @@ func TestApplicationUpdateFileInfo(t *testing.T) {
 		t.Fatalf("Failed to update file information")
 	}
 	if !openedFile.New {
-		t.Fatalf("File should be new after changing name")
-	}
-	if openedFile.Path != "" {
-		t.Fatalf("File should have empty path after changing name")
+		t.Fatalf("File should be new after changing extension or type")
 	}
 	if openedFile.Type != "Plain Text" {
 		t.Fatalf("File type wasn't changed to proper one")

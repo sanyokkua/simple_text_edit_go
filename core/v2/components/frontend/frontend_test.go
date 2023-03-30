@@ -6,6 +6,7 @@ import (
 	"simple_text_editor/core/v2/components/app"
 	"simple_text_editor/core/v2/components/dialogs"
 	"simple_text_editor/core/v2/components/events"
+	"simple_text_editor/core/v2/components/typemngr"
 	"testing"
 )
 
@@ -19,24 +20,25 @@ func TestCreateFrontendApiPanic(t *testing.T) {
 }
 
 func TestGetFileTypes(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
-	extensions["txt"] = api.FileTypesJsonStruct{
+	f2 := api.FileTypesJsonStruct{
 		Key:        "txt",
 		Name:       "Plain Text",
 		Extensions: []string{"txt"},
 	}
-	createdEditor := app.CreateEditor(&extensions)
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
+
+	createdEditor := app.CreateEditor(manager)
 	var provider api.ContextProvider = func() (ctx context.Context) {
 		return nil
 	}
 	eventsApi := events.CreateEvents(provider)
-	dialogsApi := dialogs.CreateDialogs(provider, &extensions)
-	frontendApi := CreateFrontendApi(createdEditor, eventsApi, dialogsApi, &extensions)
+	dialogsApi := dialogs.CreateDialogs(provider, manager)
+	frontendApi := CreateFrontendApi(createdEditor, eventsApi, dialogsApi, manager)
 
 	types := frontendApi.GetFileTypes()
 	if len(types) != 2 {
@@ -45,7 +47,7 @@ func TestGetFileTypes(t *testing.T) {
 
 	for i, pairStruct := range types {
 		if pairStruct.Key == "python" {
-			if types[i].Value != "python" {
+			if types[i].Value != "Python" {
 				t.Fatalf("Incorrect VALUE in type. Expected: %s, Actual: %s", "python", types[i].Value)
 			}
 		} else if pairStruct.Key == "txt" {
@@ -59,26 +61,27 @@ func TestGetFileTypes(t *testing.T) {
 }
 
 func TestGetFileTypeExtension(t *testing.T) {
-	extensions := make(map[string]api.FileTypesJsonStruct, 1)
-	extensions["py"] = api.FileTypesJsonStruct{
+	f1 := api.FileTypesJsonStruct{
 		Key:        "python",
-		Name:       "python",
+		Name:       "Python",
 		Extensions: []string{"py"},
 	}
-	extensions["txt"] = api.FileTypesJsonStruct{
+	f2 := api.FileTypesJsonStruct{
 		Key:        "txt",
 		Name:       "Plain Text",
 		Extensions: []string{"txt", "rtf"},
 	}
-	createdEditor := app.CreateEditor(&extensions)
+	manager := typemngr.CreateTypeManager([]api.FileTypesJsonStruct{f1, f2})
+
+	createdEditor := app.CreateEditor(manager)
 	var provider api.ContextProvider = func() (ctx context.Context) {
 		return nil
 	}
 	eventsApi := events.CreateEvents(provider)
-	dialogsApi := dialogs.CreateDialogs(provider, &extensions)
-	frontendApi := CreateFrontendApi(createdEditor, eventsApi, dialogsApi, &extensions)
+	dialogsApi := dialogs.CreateDialogs(provider, manager)
+	frontendApi := CreateFrontendApi(createdEditor, eventsApi, dialogsApi, manager)
 
-	extensions1 := frontendApi.GetFileTypeExtension("py")
+	extensions1 := frontendApi.GetFileTypeExtension("python")
 	if len(extensions1) != 1 {
 		t.Fatalf("Number of extensions for py should be 1. Actual: %d", len(extensions1))
 	}

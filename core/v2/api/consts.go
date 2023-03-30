@@ -7,7 +7,6 @@ const (
 	EventOnFileOpened             Destination = "EventOnFileOpened"
 	EventOnFileSaved              Destination = "EventOnFileSaved"
 	EventOnFileClosed             Destination = "EventOnFileClosed"
-	EventOnFileInformationEdit    Destination = "EventOnFileInformationEdit"
 	EventOnFileInformationDisplay Destination = "EventOnFileInformationDisplay"
 	EventOnFileInformationUpdated Destination = "EventOnFileInformationUpdated"
 	EventOnFileIsSwitched         Destination = "EventOnFileIsSwitched"

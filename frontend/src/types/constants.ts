@@ -4,7 +4,6 @@ export const EventOnNewFileCreated: string = "EventOnNewFileCreated";
 export const EventOnFileOpened: string = "EventOnFileOpened";
 export const EventOnFileSaved: string = "EventOnFileSaved";
 export const EventOnFileClosed: string = "EventOnFileClosed";
-export const EventOnFileInformationEdit: string = "EventOnFileInformationEdit";
 export const EventOnFileInformationDisplay: string = "EventOnFileInformationDisplay";
 export const EventOnFileInformationUpdated: string = "EventOnFileInformationUpdated";
 export const EventOnFileIsSwitched: string = "EventOnFileIsSwitched";

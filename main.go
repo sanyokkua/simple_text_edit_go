@@ -7,7 +7,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"simple_text_editor/core/v2"
-	"simple_text_editor/core/v2/api"
 	"simple_text_editor/core/v2/utils"
 )
 
@@ -19,9 +18,9 @@ const FileTypesFileName = "fileTypes.json"
 func main() {
 	newDefaultLogger := logger.NewDefaultLogger()
 
-	extensions := createMappingForTypes()
+	typesJson := utils.LoadFileTypesJson(FileTypesFileName)
 
-	app := v2.CreateApplication(&extensions)
+	app := v2.CreateApplication(typesJson)
 	frontendApi := app.GetFrontendApi()
 	menuApi := app.GetMenuApi()
 
@@ -49,15 +48,4 @@ func main() {
 	if appErr != nil {
 		newDefaultLogger.Fatal(appErr.Error())
 	}
-}
-
-func createMappingForTypes() map[string]api.FileTypesJsonStruct {
-	typesJson := utils.LoadFileTypesJson(FileTypesFileName)
-	extensions := make(map[string]api.FileTypesJsonStruct, len(typesJson))
-	for _, jsonStruct := range typesJson {
-		for _, extension := range jsonStruct.Extensions {
-			extensions[extension] = jsonStruct
-		}
-	}
-	return extensions
 }

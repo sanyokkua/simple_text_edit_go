@@ -20,7 +20,6 @@ func (r *menuStruct) CreateMenu() *menu.Menu {
 	file.AddText("Open", keys.CmdOrCtrl("O"), r.menuFileOpen)
 	file.AddText("Save", keys.CmdOrCtrl("S"), r.menuFileSave)
 	file.AddText("Save as", nil, r.menuFileSaveAs)
-	file.AddText("Get File Info", nil, r.menuFileGetFileInfo)
 	file.AddText("Close File", nil, r.menuFileCloseFile)
 	file.AddText("Close Application", keys.CmdOrCtrl("Q"), r.menuFileCloseApp)
 
@@ -45,10 +44,6 @@ func (r *menuStruct) menuFileSave(*menu.CallbackData) {
 
 func (r *menuStruct) menuFileSaveAs(*menu.CallbackData) {
 	r.fileOps.SaveCurrentFileAs()
-}
-
-func (r *menuStruct) menuFileGetFileInfo(*menu.CallbackData) {
-	r.fileOps.OpenCurrentFileInfo()
 }
 
 func (r *menuStruct) menuFileCloseFile(*menu.CallbackData) {

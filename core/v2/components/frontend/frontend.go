@@ -7,10 +7,10 @@ import (
 )
 
 type frontStruct struct {
-	app        api.IEditor
-	events     api.IEvents
-	dialogs    api.IDialogs
-	extensions map[string]api.FileTypesJsonStruct
+	app         api.IEditor
+	events      api.IEvents
+	dialogs     api.IDialogs
+	typeManager api.ITypeManager
 }
 
 func (r *frontStruct) GetFilesShortInfo() []api.FileInfoStruct {
@@ -54,29 +54,10 @@ func (r *frontStruct) UpdateFileInformation(fileId int64, information api.FileIn
 	r.events.SendEvent(api.EventOnFileInformationUpdated)
 }
 func (r *frontStruct) GetFileTypes() []api.KeyValuePairStruct {
-	fileTypes := make([]api.KeyValuePairStruct, 0, 0)
-	mappings := r.extensions
-	for _, mapping := range mappings {
-		fileTypes = append(fileTypes, api.KeyValuePairStruct{
-			Key:   mapping.Key,
-			Value: mapping.Name,
-		})
-	}
-	return fileTypes
+	return r.typeManager.BuildFileTypeMappingKeyToName()
 }
 func (r *frontStruct) GetFileTypeExtension(fileTypeKey string) []api.KeyValuePairStruct {
-	extensions := make([]api.KeyValuePairStruct, 0, 0)
-	mappings := r.extensions
-	fileTypes, ok := mappings[fileTypeKey]
-	if ok {
-		for _, extension := range fileTypes.Extensions {
-			extensions = append(extensions, api.KeyValuePairStruct{
-				Key:   extension,
-				Value: extension,
-			})
-		}
-	}
-	return extensions
+	return r.typeManager.BuildFileTypeMappingExtToExt(fileTypeKey)
 }
 
 func (r *frontStruct) CloseCurrentFile(fileId int64) {
@@ -116,15 +97,15 @@ func (r *frontStruct) CloseCurrentFile(fileId int64) {
 	r.events.SendEvent(api.EventOnFileClosed)
 }
 
-func CreateFrontendApi(editor api.IEditor, events api.IEvents, dialogs api.IDialogs, extensions *map[string]api.FileTypesJsonStruct) api.IFrontendApi {
+func CreateFrontendApi(editor api.IEditor, events api.IEvents, dialogs api.IDialogs, typeManager api.ITypeManager) api.IFrontendApi {
 	if editor == nil || events == nil {
 		panic("Required editor or events api are nil")
 	}
 	frontend := frontStruct{
-		app:        editor,
-		events:     events,
-		dialogs:    dialogs,
-		extensions: *extensions,
+		app:         editor,
+		events:      events,
+		dialogs:     dialogs,
+		typeManager: typeManager,
 	}
 	return &frontend
 }

@@ -57,7 +57,7 @@ func (r *filesOperations) SaveCurrentFileAs() {
 		r.events.SendErrorEvent("Failed to access current file in memory", getFileErr)
 		return
 	}
-
+	// TODO: review logic. When file for ex .java, was changed to .py, name will be .java.py what is not correct
 	tmpName := fmt.Sprintf("%s.%s", file.Name, file.Extension)
 	filePath, dialErr := r.dialogs.SaveFileDialog(tmpName)
 	if dialErr != nil {
@@ -77,11 +77,8 @@ func (r *filesOperations) saveFile(fileId int64) {
 
 	r.events.SendEvent(api.EventOnFileSaved)
 }
-func (r *filesOperations) OpenCurrentFileInfo() {
-	r.events.SendEvent(api.EventOnFileInformationDisplay)
-}
 func (r *filesOperations) EditCurrentFileInfo() {
-	r.events.SendEvent(api.EventOnFileInformationEdit)
+	r.events.SendEvent(api.EventOnFileInformationDisplay)
 }
 func (r *filesOperations) CloseCurrentFile() {
 	file, getFileErr := r.app.GetOpenedFile()

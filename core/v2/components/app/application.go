@@ -10,8 +10,8 @@ import (
 )
 
 type editor struct {
-	files      map[int64]*api.FileStruct
-	extensions map[string]api.FileTypesJsonStruct
+	files       map[int64]*api.FileStruct
+	typeManager api.ITypeManager
 }
 
 func (r *editor) GetAllFilesInfo() []api.FileInfoStruct {
@@ -62,7 +62,7 @@ func (r *editor) OpenFile(filePath string) error {
 		return err
 	}
 
-	fileWithData := files.CreateNewFileWithData(filePath, text, r.extensions)
+	fileWithData := files.CreateNewFileWithData(filePath, text, r.typeManager)
 	r.addFileToMemory(&fileWithData)
 	return r.SwitchOpenedFileTo(fileWithData.Id)
 }
@@ -79,7 +79,7 @@ func (r *editor) SaveFile(fileId int64) error {
 
 	name := utils.GetFileNameFromPath(file.Path)
 	ext := utils.GetFileExtensionFromPath(file.Path)
-	ftype := utils.GetFileType(ext, r.extensions)
+	ftype := r.typeManager.GetTypeKeyByExtension(ext)
 
 	file.InitialContent = file.ActualContent
 	file.New = false
@@ -171,37 +171,38 @@ func (r *editor) UpdateFileInformation(fileId int64, information api.FileInfoUpd
 		return err
 	}
 
-	name := information.Name
 	fileType := information.Type
 	extension := information.Extension
 
-	if file.New {
-		file.Name = name
+	//TODO: review logic below. If file is not new and extension returned to original it should not be marked as new
+	if file.New && file.InitialExtension == "" {
 		file.Type = fileType
 		file.Extension = extension
 		return nil
 	}
 
-	file.Name = name
-	file.Path = ""
+	var shouldBeNew = false
+	if file.InitialExtension != extension || file.Type != fileType {
+		shouldBeNew = true
+	}
 	file.Type = fileType
 	file.Extension = extension
-	file.New = true
+	file.New = shouldBeNew
 	return nil
 }
 
 func (r *editor) addFileToMemory(file *api.FileStruct) {
 	r.files[file.Id] = file
 }
-func CreateEditor(extensions *map[string]api.FileTypesJsonStruct) api.IEditor {
-	if extensions == nil {
+func CreateEditor(typeManager api.ITypeManager) api.IEditor {
+	if typeManager == nil {
 		panic("Extensions passed to editor factory method is nil")
 	}
 
 	editorFilesStorage := make(map[int64]*api.FileStruct)
 	editorApp := editor{
-		files:      editorFilesStorage,
-		extensions: *extensions,
+		files:       editorFilesStorage,
+		typeManager: typeManager,
 	}
 
 	file := files.CreateNewFileEmpty()

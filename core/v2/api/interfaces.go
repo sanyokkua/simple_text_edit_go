@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type IIdProvider interface {
@@ -27,7 +28,6 @@ type IFilesOperations interface {
 	OpenFile()
 	SaveCurrentFile()
 	SaveCurrentFileAs()
-	OpenCurrentFileInfo()
 	EditCurrentFileInfo()
 	CloseCurrentFile()
 	CloseApplication()
@@ -68,4 +68,17 @@ type IApplication interface {
 
 	GetMenuApi() IMenuApi
 	GetFrontendApi() IFrontendApi
+}
+
+type ITypeManager interface {
+	GetTypeStructByKey(key string) *FileTypesJsonStruct       // key represent lowercase value such "csharp", "javascript", etc
+	GetTypeStructByExt(extension string) *FileTypesJsonStruct // extension represent value such ".cs", ".js", etc
+
+	GetTypeKeyByExtension(extension string) string // extension is like ".js", type is like "javascript"
+	GetExtensionsForType(key string) []string      // key represent lowercase value such "csharp", extension -> ".ext"
+
+	GetSupportedFileFilters() []runtime.FileFilter //
+
+	BuildFileTypeMappingKeyToName() []KeyValuePairStruct
+	BuildFileTypeMappingExtToExt(fileTypeKey string) []KeyValuePairStruct
 }
