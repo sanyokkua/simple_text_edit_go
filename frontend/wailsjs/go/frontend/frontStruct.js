@@ -7,7 +7,7 @@ export function CloseCurrentFile(arg1) {
 }
 
 export function GetFileTypeExtension(arg1) {
-    return window['go']['frontend']['frontStruct']['GetFileTypeExtension'](arg1);
+  return window['go']['frontend']['frontStruct']['GetFileTypeExtension'](arg1);
 }
 
 export function GetFileTypes() {
