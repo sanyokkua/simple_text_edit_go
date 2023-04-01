@@ -19,6 +19,19 @@ func ForEach[T interface{}](slice []T, callback func(index int, data *T)) {
 	}
 }
 
+func FindInSlice[T interface{}](slice []T, compare func(value T) bool) (index int) {
+	if validators.IsNil(slice) {
+		return -1
+	}
+
+	for i, value := range slice {
+		if compare(value) {
+			return i
+		}
+	}
+	return -1
+}
+
 func ReadFileTypesJson(path string) ([]types.FileTypesJsonStruct, error) {
 	if validators.IsEmptyString(path) {
 		return nil, errors.New("path to file types config json is empty")

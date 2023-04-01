@@ -11,10 +11,6 @@ import (
 
 const FilterExtensionPattern string = "*.%s;"
 
-var TextFilter = runtime.FileFilter{
-	DisplayName: "Plain Text",
-	Pattern:     "*.txt",
-}
 var AnyFileFilter = runtime.FileFilter{
 	DisplayName: "Any File",
 	Pattern:     "",
@@ -86,7 +82,7 @@ func (r *TypeManagerStruct) GetSupportedFileFilters() []runtime.FileFilter {
 		fileFilters = append(fileFilters, createFileFilter(value))
 	}
 
-	fileFilters = append(fileFilters, TextFilter, AnyFileFilter)
+	fileFilters = append(fileFilters, AnyFileFilter)
 
 	return fileFilters
 }

@@ -3,281 +3,281 @@
     "key": "c",
     "name": "C",
     "extensions": [
-      "c",
-      "h",
-      "cc",
-      "hh",
-      "C",
-      "H"
+      ".c",
+      ".h",
+      ".cc",
+      ".hh",
+      ".C",
+      ".H"
     ]
   },
   {
     "key": "cmake",
     "name": "Cmake",
     "extensions": [
-      "cmake"
+      ".cmake"
     ]
   },
   {
     "key": "cpp",
     "name": "Cpp",
     "extensions": [
-      "cpp",
-      "cxx",
-      "c++",
-      "hpp",
-      "hxx",
-      "h++"
+      ".cpp",
+      ".cxx",
+      ".c++",
+      ".hpp",
+      ".hxx",
+      ".h++"
     ]
   },
   {
     "key": "csharp",
     "name": "Csharp",
     "extensions": [
-      "cs",
-      "csx"
+      ".cs",
+      ".csx"
     ]
   },
   {
     "key": "css",
     "name": "Css",
     "extensions": [
-      "css"
+      ".css"
     ]
   },
   {
     "key": "dockerfile",
     "name": "Dockerfile",
     "extensions": [
-      "dockerfile"
+      ".dockerfile"
     ]
   },
   {
     "key": "go",
     "name": "Golang",
     "extensions": [
-      "go"
+      ".go"
     ]
   },
   {
     "key": "html",
     "name": "Html",
     "extensions": [
-      "html"
+      ".html"
     ]
   },
   {
     "key": "json",
     "name": "Json",
     "extensions": [
-      "json"
+      ".json"
     ]
   },
   {
     "key": "jsx",
     "name": "Jsx",
     "extensions": [
-      "jsx"
+      ".jsx"
     ]
   },
   {
     "key": "lua",
     "name": "Lua",
     "extensions": [
-      "lua"
+      ".lua"
     ]
   },
   {
     "key": "groovy",
     "name": "Groovy",
     "extensions": [
-      "groovy",
-      "gvy",
-      "gy",
-      "gsh"
+      ".groovy",
+      ".gvy",
+      ".gy",
+      ".gsh"
     ]
   },
   {
     "key": "java",
     "name": "Java",
     "extensions": [
-      "java",
-      "jmod"
+      ".java",
+      ".jmod"
     ]
   },
   {
     "key": "javascript",
     "name": "Javascript",
     "extensions": [
-      "js",
-      "cjs",
-      "mjs"
+      ".js",
+      ".cjs",
+      ".mjs"
     ]
   },
   {
     "key": "jinja2",
     "name": "Jinja_2",
     "extensions": [
-      "jinja2",
-      "j2"
+      ".jinja2",
+      ".j2"
     ]
   },
   {
     "key": "kotlin",
     "name": "Kotlin",
     "extensions": [
-      "kt",
-      "kts",
-      "ktm"
+      ".kt",
+      ".kts",
+      ".ktm"
     ]
   },
   {
     "key": "markdown",
     "name": "Markdown",
     "extensions": [
-      "markdown",
-      "md"
+      ".markdown",
+      ".md"
     ]
   },
   {
     "key": "objectivec",
     "name": "Objective C",
     "extensions": [
-      "m",
-      "M",
-      "mm"
+      ".m",
+      ".M",
+      ".mm"
     ]
   },
   {
     "key": "php",
     "name": "Php",
     "extensions": [
-      "php"
+      ".php"
     ]
   },
   {
     "key": "powershell",
     "name": "Powershell",
     "extensions": [
-      "ps1"
+      ".ps1"
     ]
   },
   {
     "key": "properties",
     "name": "Properties",
     "extensions": [
-      "properties"
+      ".properties"
     ]
   },
   {
     "key": "puppet",
     "name": "Puppet",
     "extensions": [
-      "pp"
+      ".pp"
     ]
   },
   {
     "key": "python",
     "name": "Python",
     "extensions": [
-      "py",
-      "pyi",
-      "pyw"
+      ".py",
+      ".pyi",
+      ".pyw"
     ]
   },
   {
     "key": "ruby",
     "name": "Ruby",
     "extensions": [
-      "rb"
+      ".rb"
     ]
   },
   {
     "key": "rust",
     "name": "Rust",
     "extensions": [
-      "rs"
+      ".rs"
     ]
   },
   {
     "key": "scala",
     "name": "Scala",
     "extensions": [
-      "scala",
-      "sc"
+      ".scala",
+      ".sc"
     ]
   },
   {
     "key": "shell",
     "name": "Shell",
     "extensions": [
-      "sh"
+      ".sh"
     ]
   },
   {
     "key": "sql",
     "name": "Sql",
     "extensions": [
-      "sql"
+      ".sql"
     ]
   },
   {
     "key": "swift",
     "name": "Swift",
     "extensions": [
-      "swift",
-      "SWIFT"
+      ".swift",
+      ".SWIFT"
     ]
   },
   {
     "key": "toml",
     "name": "Toml",
     "extensions": [
-      "toml"
+      ".toml"
     ]
   },
   {
     "key": "tsx",
     "name": "Tsx",
     "extensions": [
-      "tsx"
+      ".tsx"
     ]
   },
   {
     "key": "typescript",
     "name": "Typescript",
     "extensions": [
-      "ts"
+      ".ts"
     ]
   },
   {
     "key": "velocity",
     "name": "Velocity",
     "extensions": [
-      "vm",
-      "vt"
+      ".vm",
+      ".vt"
     ]
   },
   {
     "key": "xml",
     "name": "Xml",
     "extensions": [
-      "xml"
+      ".xml"
     ]
   },
   {
     "key": "yaml",
     "name": "Yaml",
     "extensions": [
-      "yaml",
-      "yml"
+      ".yaml",
+      ".yml"
     ]
   },
   {
     "key": "txt",
     "name": "Plain Text",
     "extensions": [
-      "txt"
+      ".txt"
     ]
   }
 ]

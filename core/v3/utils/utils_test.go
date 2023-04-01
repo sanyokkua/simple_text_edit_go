@@ -40,6 +40,34 @@ func TestForEach(t *testing.T) {
 	assert.False(t, index3IsIncorrect, "Indexed value is not correct")
 }
 
+func TestFindInSlice(t *testing.T) {
+	var emptySlice []string
+	wasExecuted := false
+	indexEmpty := FindInSlice(emptySlice, func(value string) bool {
+		wasExecuted = true
+		return value == ""
+	})
+	assert.False(t, wasExecuted, "For empty slice it is not expected that any executions of callback happen")
+	assert.Equal(t, -1, indexEmpty, "For empty slice it is not expected that any executions of callback happen")
+
+	notEmptySlice := []string{"Value1", "Value2", "Value3"}
+
+	index0 := FindInSlice(notEmptySlice, func(value string) bool {
+		return "Value1" == value
+	})
+	index1 := FindInSlice(notEmptySlice, func(value string) bool {
+		return "Value2" == value
+	})
+	index2 := FindInSlice(notEmptySlice, func(value string) bool {
+		return "Value3" == value
+	})
+
+	assert.Equal(t, 0, index0, "Index of found entity is invalid")
+	assert.Equal(t, 1, index1, "Index of found entity is invalid")
+	assert.Equal(t, 2, index2, "Index of found entity is invalid")
+
+}
+
 func TestMapFileTypesJsonStructToTypesMap(t *testing.T) {
 	structSlice := []types.FileTypesJsonStruct{{
 		Key:        "key",
