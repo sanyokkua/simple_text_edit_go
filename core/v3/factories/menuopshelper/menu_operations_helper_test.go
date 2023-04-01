@@ -1,11 +1,21 @@
 package menuopshelper
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateIMenuOpsHelper(t *testing.T) {
 
+}
+
+func TestCreateIMenuOpsHelperPanic(t *testing.T) {
+	defer func() {
+		r := recover()
+		require.NotNil(t, r, "Code didn't panic")
+	}()
+
+	CreateIMenuOpsHelper(nil, nil, nil, nil)
 }
 
 func TestMenuHelperOperationsStruct_CloseApplication(t *testing.T) {

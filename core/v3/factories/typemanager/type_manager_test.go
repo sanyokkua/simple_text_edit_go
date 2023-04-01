@@ -1,11 +1,21 @@
 package typemanager
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateITypeManager(t *testing.T) {
 
+}
+
+func TestCreateITypeManagerPanic(t *testing.T) {
+	defer func() {
+		r := recover()
+		require.NotNil(t, r, "Code didn't panic")
+	}()
+
+	CreateITypeManager(nil)
 }
 
 func TestTypeManagerStruct_BuildFileTypeMappingExtToExt(t *testing.T) {

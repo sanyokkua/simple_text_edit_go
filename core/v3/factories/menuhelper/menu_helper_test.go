@@ -1,11 +1,21 @@
 package menuhelper
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateIMenuHelper(t *testing.T) {
 
+}
+
+func TestCreateIMenuHelperPanic(t *testing.T) {
+	defer func() {
+		r := recover()
+		require.NotNil(t, r, "Code didn't panic")
+	}()
+
+	CreateIMenuHelper(nil)
 }
 
 func TestMenuHelperStruct_CreateMenu(t *testing.T) {

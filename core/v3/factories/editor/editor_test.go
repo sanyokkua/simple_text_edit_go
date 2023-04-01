@@ -1,11 +1,21 @@
 package editor
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateIEditor(t *testing.T) {
 
+}
+
+func TestCreateIEditorPanic(t *testing.T) {
+	defer func() {
+		r := recover()
+		require.NotNil(t, r, "Code didn't panic")
+	}()
+
+	CreateIEditor(nil, nil)
 }
 
 func TestEditorStruct_CloseFile(t *testing.T) {

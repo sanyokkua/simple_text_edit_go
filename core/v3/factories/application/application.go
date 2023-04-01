@@ -12,6 +12,7 @@ import (
 	"simple_text_editor/core/v3/factories/typemanager"
 	"simple_text_editor/core/v3/factories/uniqueidgen"
 	"simple_text_editor/core/v3/types"
+	"simple_text_editor/core/v3/validators"
 )
 
 type ApplicationStruct struct {
@@ -50,6 +51,8 @@ func (r *ApplicationStruct) GetFrontendApi() types.IFrontendApi {
 }
 
 func CreateIApplication(typesMap types.TypesMap) types.IApplication {
+	validators.PanicOnNil(typesMap, "TypesMap")
+
 	application := ApplicationStruct{}
 
 	iUniqueIdGenerator := uniqueidgen.CreateIUniqueIdGenerator()

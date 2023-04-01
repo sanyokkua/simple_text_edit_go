@@ -3,8 +3,8 @@ package editor
 import (
 	"errors"
 	"fmt"
-	"simple_text_editor/core/v2/utils/io"
 	"simple_text_editor/core/v3/types"
+	"simple_text_editor/core/v3/utils/io"
 	"simple_text_editor/core/v3/validators"
 )
 

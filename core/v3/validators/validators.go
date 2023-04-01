@@ -3,12 +3,14 @@ package validators
 import (
 	"fmt"
 	"github.com/labstack/gommon/log"
+	"reflect"
 	"regexp"
 	"strings"
 )
 
 func IsEmptyString(value string) bool {
-	return len(value) == 0
+	trim := strings.Trim(value, " \t\n")
+	return len(trim) == 0
 }
 
 func IsNil(value interface{}) bool {
@@ -31,7 +33,7 @@ func IsValidExtension(value string) bool {
 	if IsEmptyString(value) {
 		return false
 	}
-	matched, err := regexp.MatchString(`^\.(\d\w)+$`, value)
+	matched, err := regexp.MatchString(`^\.([a-zA-Z0-9+])+$`, value)
 	if err != nil {
 		log.Warn("Passed value failed matching. Value: ", value)
 		return false
@@ -39,8 +41,8 @@ func IsValidExtension(value string) bool {
 	return matched
 }
 
-func PanicOnNil(argument interface{}, argumentName string) {
-	if IsNil(argument) {
+func PanicOnNil[T interface{}](argument T, argumentName string) {
+	if IsNil(argument) || reflect.ValueOf(argument).IsZero() {
 		panic(fmt.Sprintf("%s should not be NIL", argumentName))
 	}
 }
@@ -54,7 +56,7 @@ func IsValidFileTypeKey(value string) bool {
 		return false
 	}
 
-	matched, err := regexp.MatchString(`^(\d\w)+$`, value)
+	matched, err := regexp.MatchString(`^([a-zA-Z 0-9+_])+$`, value)
 	if err != nil {
 		log.Warn("Passed value failed matching. Value: ", value)
 		return false

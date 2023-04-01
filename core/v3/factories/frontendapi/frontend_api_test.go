@@ -1,11 +1,21 @@
 package frontendapi
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreateIFrontendApi(t *testing.T) {
 
+}
+
+func TestCreateIFrontendApiPanic(t *testing.T) {
+	defer func() {
+		r := recover()
+		require.NotNil(t, r, "Code didn't panic")
+	}()
+
+	CreateIFrontendApi(nil, nil, nil, nil)
 }
 
 func TestFrontendApiStruct_CloseFile(t *testing.T) {
