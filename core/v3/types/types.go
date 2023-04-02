@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+//go:generate mockery --name ContextProvider
 type ContextProvider func() (ctx context.Context)
 type Destination string
 

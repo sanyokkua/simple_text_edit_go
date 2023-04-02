@@ -8,6 +8,8 @@ import (
 	"simple_text_editor/core/v3/validators"
 )
 
+var RuntimeQuit = runtime.Quit
+
 type MenuHelperOperationsStruct struct {
 	GetContext   types.ContextProvider
 	EventSender  types.IEventSender
@@ -131,16 +133,15 @@ func (r *MenuHelperOperationsStruct) CloseApplication() {
 		r.EventSender.SendErrorEvent("Failed to get all files")
 		return
 	}
-
 	var hasChanges bool
 	for _, file := range allFilesInfo {
 		if file.Changed {
 			hasChanges = true
-			return
+			break
 		}
 	}
 	if !hasChanges {
-		runtime.Quit(r.GetContext())
+		RuntimeQuit(r.GetContext())
 		return
 	}
 
@@ -154,7 +155,8 @@ func (r *MenuHelperOperationsStruct) CloseApplication() {
 	}
 
 	if btn.EqualTo(types.BtnOk) {
-		runtime.Quit(r.GetContext())
+		RuntimeQuit(r.GetContext())
+		return
 	}
 }
 

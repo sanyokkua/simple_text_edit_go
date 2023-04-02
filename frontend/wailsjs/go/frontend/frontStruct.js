@@ -11,7 +11,7 @@ export function GetFileTypeExtension(arg1) {
 }
 
 export function GetFileTypes() {
-    return window['go']['frontend']['frontStruct']['GetFileTypes']();
+  return window['go']['frontend']['frontStruct']['GetFileTypes']();
 }
 
 export function GetFilesShortInfo() {
