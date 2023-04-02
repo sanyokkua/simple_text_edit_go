@@ -6,8 +6,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"simple_text_editor/core/v2"
-	"simple_text_editor/core/v2/utils"
+	//"simple_text_editor/core/v2"
+	//"simple_text_editor/core/v2/utils"
 	"simple_text_editor/core/v3/factories/application"
 	utils2 "simple_text_editor/core/v3/utils"
 	"simple_text_editor/core/v3/validators"
@@ -32,11 +32,7 @@ func main() {
 
 	iApplication := application.CreateIApplication(typesMap)
 	iFrontApi := iApplication.GetFrontendApi()
-
-	typesJson := utils.LoadFileTypesJson(FileTypesFileName)
-	app := v2.CreateApplication(typesJson)
-	frontendApi := app.GetFrontendApi()
-	menuApi := app.GetMenuApi()
+	iMenuHelper := iApplication.GetMenuApi()
 
 	appErr := wails.Run(&options.App{
 		Title:  "Simple Text Editor",
@@ -45,13 +41,12 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		OnStartup:     app.OnStartup,
-		OnDomReady:    app.OnDomReady,
-		OnShutdown:    app.OnShutdown,
-		OnBeforeClose: app.OnBeforeClose,
-		Menu:          menuApi.CreateMenu(),
+		OnStartup:     iApplication.OnStartup,
+		OnDomReady:    iApplication.OnDomReady,
+		OnShutdown:    iApplication.OnShutdown,
+		OnBeforeClose: iApplication.OnBeforeClose,
+		Menu:          iMenuHelper.CreateMenu(),
 		Bind: []interface{}{
-			frontendApi,
 			iFrontApi,
 		},
 		Debug: options.Debug{

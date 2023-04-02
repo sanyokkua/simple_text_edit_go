@@ -3,7 +3,7 @@ import {FileInfoUpdateStruct, FileStruct} from "../types/backend";
 import Info from "./file_info/Info";
 import Edit from "./file_info/Edit";
 import {Button, Modal} from "semantic-ui-react";
-import {UpdateFileInformation} from "../../wailsjs/go/frontend/frontStruct";
+import {UpdateFileInformation} from "../../wailsjs/go/frontendapi/FrontendApiStruct";
 
 type FileInfoEditProps = {
     currentFile: FileStruct | null;

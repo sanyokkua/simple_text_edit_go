@@ -2,7 +2,7 @@ import React from "react";
 import {FileInfoStruct} from "../types/backend";
 import {SemanticCOLORS} from "semantic-ui-react/dist/commonjs/generic";
 import {Icon, Menu} from "semantic-ui-react";
-import {CloseCurrentFile, SwitchOpenedFileTo} from "../../wailsjs/go/frontend/frontStruct";
+import {CloseFile, SwitchOpenedFileTo} from "../../wailsjs/go/frontendapi/FrontendApiStruct";
 
 type FilesTabBarProps = {
     files: FileInfoStruct[];
@@ -45,7 +45,7 @@ class TabBar extends React.Component<FilesTabBarProps, any> {
     }
 
     onTabCloseClicked(fileId: number) {
-        CloseCurrentFile(fileId).catch((e) => this.props.onError(e));
+        CloseFile(fileId).catch((e) => this.props.onError(e));
     }
 
     render() {

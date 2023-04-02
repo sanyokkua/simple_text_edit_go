@@ -1,7 +1,7 @@
 import React from "react";
-import {FileInfoUpdateStruct, FileStruct, KeyValuePairStruct} from "../../types/backend";
+import {FileInfoUpdateStruct, FileStruct, FrontendKeyValueArrayContainerStruct} from "../../types/backend";
 import {Button, DropdownItemProps, DropdownProps, Form} from "semantic-ui-react";
-import {GetFileTypeExtension, GetFileTypes} from "../../../wailsjs/go/frontend/frontStruct";
+import {GetFileTypeExtension, GetFileTypes} from "../../../wailsjs/go/frontendapi/FrontendApiStruct";
 import {isStringEmpty} from "../../utils/string_utils";
 
 type EditProps = {
@@ -17,8 +17,11 @@ type EditState = {
     isFormValid: boolean;
 };
 
-function mapKeyValueToDropdownItem(keyValuePairTypesList: KeyValuePairStruct[]): DropdownItemProps[] {
-    return keyValuePairTypesList.map(fileInfo => {
+function mapKeyValueToDropdownItem(keyValuePairTypesList: FrontendKeyValueArrayContainerStruct): DropdownItemProps[] {
+    if (keyValuePairTypesList.HasError) {
+        return [];
+    }
+    return keyValuePairTypesList.Pairs.map(fileInfo => {
         return {
             key: fileInfo.Key,
             value: fileInfo.Key,

@@ -1,7 +1,7 @@
 import React from "react";
 import {FileStruct} from "../types/backend";
 import CodeMirror from "@uiw/react-codemirror";
-import {UpdateFileContent} from "../../wailsjs/go/frontend/frontStruct";
+import {UpdateFileContent} from "../../wailsjs/go/frontendapi/FrontendApiStruct";
 import {LanguageName, loadLanguage} from "@uiw/codemirror-extensions-langs";
 import AppModalInfoDialog from "./AppModalInfoDialog";
 

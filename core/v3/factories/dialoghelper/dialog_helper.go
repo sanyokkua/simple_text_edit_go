@@ -2,7 +2,6 @@ package dialoghelper
 
 import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"simple_text_editor/core/v2/api"
 	"simple_text_editor/core/v3/types"
 	"simple_text_editor/core/v3/validators"
 )
@@ -37,8 +36,8 @@ func (r *DialogHelperStruct) SaveFileDialog(defaultFileNameWithExt string) (file
 
 func (r *DialogHelperStruct) OkCancelMessageDialog(title string, message string) (types.Button, error) {
 	ctx := r.GetContext()
-	okBtn := string(api.BtnOk)
-	cancelBtn := string(api.BtnCancel)
+	okBtn := string(types.BtnOk)
+	cancelBtn := string(types.BtnCancel)
 
 	clickedBtnName, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
 		Type:          runtime.WarningDialog,

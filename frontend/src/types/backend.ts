@@ -26,9 +26,27 @@ export type FileInfoUpdateStruct = {
     Id: number;
     Type: string;
     Extension: string;
-}
+};
 
 export type KeyValuePairStruct = {
     Key: string;
     Value: string;
 };
+
+export type FrontendFileContainerStruct = {
+    HasError: boolean;
+    Error: string;
+    File: FileStruct;
+}
+
+export type FrontendFileInfoArrayContainerStruct = {
+    HasError: boolean;
+    Error: string;
+    Files: FileInfoStruct[];
+}
+
+export type FrontendKeyValueArrayContainerStruct = {
+    HasError: boolean;
+    Error: string;
+    Pairs: KeyValuePairStruct[];
+}

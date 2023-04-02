@@ -1,8 +1,13 @@
 import React from "react";
 
 import {EventsOn} from "../wailsjs/runtime";
-import {GetFilesShortInfo, GetOpenedFile} from "../wailsjs/go/frontend/frontStruct";
-import {FileInfoStruct, FileStruct} from "./types/backend";
+import {GetFilesShortInfo, GetOpenedFile} from "../wailsjs/go/frontendapi/FrontendApiStruct";
+import {
+    FileInfoStruct,
+    FileStruct,
+    FrontendFileContainerStruct,
+    FrontendFileInfoArrayContainerStruct,
+} from "./types/backend";
 import {
     EventOnFileClosed,
     EventOnFileContentIsUpdated,
@@ -84,9 +89,21 @@ class App extends React.Component<any, AppState> {
 
     updateEditorState() {
         GetFilesShortInfo()
-            .then((files: FileInfoStruct[]) => this.setState({openedFiles: files}))
+            .then((files: FrontendFileInfoArrayContainerStruct) => {
+                if (files.HasError) {
+                    //TODO: add handling
+                    return;
+                }
+                this.setState({openedFiles: files.Files});
+            })
             .then(GetOpenedFile)
-            .then((currentFile: FileStruct) => this.setState({currentFile: currentFile}))
+            .then((currentFile: FrontendFileContainerStruct) => {
+                if (currentFile.HasError) {
+                    //TODO: add handling
+                    return;
+                }
+                this.setState({currentFile: currentFile.File});
+            })
             .catch((e) => this.onError(e));
     }
 
