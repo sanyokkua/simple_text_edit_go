@@ -11,16 +11,17 @@ import (
 )
 
 func ForEach[T interface{}](slice []T, callback func(index int, data *T)) {
-	if validators.IsNil(slice) {
+	if slice == nil {
 		return
 	}
 	for i, value := range slice {
-		callback(i, &value)
+		currVal := value
+		callback(i, &currVal)
 	}
 }
 
 func FindInSlice[T interface{}](slice []T, compare func(value T) bool) (index int) {
-	if validators.IsNil(slice) {
+	if slice == nil {
 		return -1
 	}
 
@@ -66,9 +67,11 @@ func MapFileTypesJsonStructToTypesMap(fileTypes []types.FileTypesJsonStruct) (ty
 	}
 
 	typesMap := make(types.TypesMap, len(fileTypes))
-	ForEach(fileTypes, func(_ int, data *types.FileTypesJsonStruct) {
-		typesMap[data.Key] = data
-	})
+
+	for _, fileType := range fileTypes {
+		fileType := fileType
+		typesMap[fileType.Key] = &fileType
+	}
 
 	return typesMap, nil
 }

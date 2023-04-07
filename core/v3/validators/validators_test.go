@@ -21,33 +21,12 @@ func TestIsEmptyString(t *testing.T) {
 	assert.True(t, IsEmptyString(""), "Should return true on empty string")
 }
 
-func TestIsNil(t *testing.T) {
-	type test struct {
-		field string
-	}
-
-	assert.True(t, IsNil(nil), "Should return true on nil value")
-	assert.False(t, IsNil(test{
-		field: "",
-	}), "Should return false on non nil value")
-}
-
 func TestIsNilOrEmptySlice(t *testing.T) {
 	var slice []string = nil
 	assert.True(t, IsNilOrEmptySlice(slice), "Should return true on nil slice")
 	assert.True(t, IsNilOrEmptySlice([]string{}), "Should return true on empty slice")
+	assert.True(t, IsNilOrEmptySlice([]int64{}), "Should return true on empty slice")
 	assert.False(t, IsNilOrEmptySlice([]string{"Hello"}), "Should return false on slice with values")
-}
-
-func TestIsNotNil(t *testing.T) {
-	type test struct {
-		field string
-	}
-
-	assert.False(t, IsNotNil(nil), "Should return false on value")
-	assert.True(t, IsNotNil(test{
-		field: "",
-	}), "Should return true on nil value")
 }
 
 func TestIsValidExtension(t *testing.T) {

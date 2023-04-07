@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"simple_text_editor/core/v3/types"
 	"simple_text_editor/core/v3/validators"
+	"strings"
 )
 
 type FileHelperStruct struct {
@@ -39,7 +40,7 @@ func (r *FileHelperStruct) CreateNewFileEmpty() (*types.FileStruct, error) {
 	id := r.UniqueIdGenerator.GenerateId()
 	return &types.FileStruct{
 		Id:   id,
-		Name: "*New*",
+		Name: types.NewFileName,
 		New:  true,
 	}, nil
 }
@@ -47,6 +48,19 @@ func (r *FileHelperStruct) CreateNewFileEmpty() (*types.FileStruct, error) {
 func (r *FileHelperStruct) CreateNewFileWithData(path string, originalContent string) (*types.FileStruct, error) {
 	id := r.UniqueIdGenerator.GenerateId()
 
+	fileStruct := types.FileStruct{
+		Id:             id,
+		Path:           path,
+		InitialContent: originalContent,
+		ActualContent:  originalContent,
+		Opened:         false,
+		Changed:        false,
+	}
+
+	return r.UpdateFileDataOnFilePath(path, &fileStruct)
+}
+
+func (r *FileHelperStruct) UpdateFileDataOnFilePath(path string, file *types.FileStruct) (*types.FileStruct, error) {
 	fileName, fileNameErr := r.GetFileNameFromPath(path)
 	if validators.HasError(fileNameErr) {
 		return nil, fileNameErr
@@ -64,19 +78,17 @@ func (r *FileHelperStruct) CreateNewFileWithData(path string, originalContent st
 
 	isNew := validators.IsEmptyString(path)
 
-	return &types.FileStruct{
-		Id:               id,
-		Path:             path,
-		Name:             fileName,
-		Extension:        string(fileExtension),
-		InitialExtension: string(fileExtension),
-		Type:             string(fileType),
-		InitialContent:   originalContent,
-		ActualContent:    originalContent,
-		New:              isNew,
-		Opened:           false,
-		Changed:          false,
-	}, nil
+	if len(fileName) > 0 && len(fileExtension) > 0 && strings.HasSuffix(fileName, string(fileExtension)) {
+		index := strings.LastIndex(fileName, string(fileExtension))
+		fileName = fileName[:index]
+	}
+
+	file.New = isNew
+	file.Name = fileName
+	file.Type = string(fileType)
+	file.Extension = string(fileExtension)
+
+	return file, nil
 }
 
 func CreateIFileHelper(uniqueIdGenerator types.IUniqueIdGenerator, typeManager types.ITypeManager) types.IFileHelper {

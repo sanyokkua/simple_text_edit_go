@@ -2,7 +2,7 @@ package frontendapi
 
 import (
 	"fmt"
-	"simple_text_editor/core/v3/factories/eventsender"
+	"simple_text_editor/core/v3/components/eventsender"
 	"simple_text_editor/core/v3/types"
 	"simple_text_editor/core/v3/validators"
 	"sort"
@@ -13,6 +13,17 @@ type FrontendApiStruct struct {
 	EventSender  types.IEventSender
 	DialogHelper types.IDialogHelper
 	TypeManager  types.ITypeManager
+}
+
+func (r *FrontendApiStruct) NewFile() {
+	fileCreationErr := r.Editor.CreateFileAndShow()
+
+	if validators.HasError(fileCreationErr) {
+		r.EventSender.SendErrorEvent("IApplication failed to create new file", fileCreationErr)
+		return
+	}
+
+	r.EventSender.SendNotificationEvent(eventsender.EventOnNewFileCreated)
 }
 
 func (r *FrontendApiStruct) GetFilesShortInfo() types.FrontendFileInfoArrayContainerStruct {
@@ -50,6 +61,7 @@ func (r *FrontendApiStruct) GetOpenedFile() types.FrontendFileContainerStruct {
 	}
 }
 
+// GetFileTypes Deprecated. TODO: Remove
 func (r *FrontendApiStruct) GetFileTypes() types.FrontendKeyValueArrayContainerStruct {
 	fileTypes, buildErr := r.TypeManager.BuildFileTypeMappingKeyToName()
 	if validators.HasError(buildErr) {
@@ -65,6 +77,7 @@ func (r *FrontendApiStruct) GetFileTypes() types.FrontendKeyValueArrayContainerS
 	}
 }
 
+// GetFileTypeExtension Deprecated. TODO: Remove
 func (r *FrontendApiStruct) GetFileTypeExtension(fileTypeKey string) types.FrontendKeyValueArrayContainerStruct {
 	fileExtensions, buildErr := r.TypeManager.BuildFileTypeMappingExtToExt(types.FileTypeKey(fileTypeKey))
 	if validators.HasError(buildErr) {
@@ -100,17 +113,9 @@ func (r *FrontendApiStruct) UpdateFileContent(fileId int64, content string) {
 	r.EventSender.SendNotificationEvent(eventsender.EventOnFileContentIsUpdated)
 }
 
-func (r *FrontendApiStruct) UpdateFileInformation(fileId int64, updateStruct types.FileTypeUpdateStruct) {
-	updateErr := r.Editor.UpdateFileInformation(fileId, updateStruct)
-	if validators.HasError(updateErr) {
-		r.EventSender.SendWarnEvent("File information was not updated", updateErr)
-		return
-	}
-
-	r.EventSender.SendNotificationEvent(eventsender.EventOnFileInformationUpdated)
-}
-
 func (r *FrontendApiStruct) CloseFile(fileId int64) {
+	r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiTrue)
+
 	file, getFileErr := r.Editor.GetFileById(fileId)
 	if validators.HasError(getFileErr) {
 		r.EventSender.SendErrorEvent("Failed to access file by id in memory", getFileErr)
@@ -134,6 +139,7 @@ func (r *FrontendApiStruct) CloseFile(fileId int64) {
 		}
 
 		if btn.EqualTo(types.BtnCancel) {
+			r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiFalse)
 			return
 		}
 
@@ -144,6 +150,7 @@ func (r *FrontendApiStruct) CloseFile(fileId int64) {
 		}
 	}
 
+	r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiFalse)
 	r.EventSender.SendNotificationEvent(eventsender.EventOnFileClosed)
 }
 

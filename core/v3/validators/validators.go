@@ -13,14 +13,6 @@ func IsEmptyString(value string) bool {
 	return len(trim) == 0
 }
 
-func IsNil(value interface{}) bool {
-	return value == nil
-}
-
-func IsNotNil(value interface{}) bool {
-	return !IsNil(value)
-}
-
 func IsNilOrEmptySlice[T interface{}](slice []T) bool {
 	return slice == nil || len(slice) == 0
 }
@@ -42,7 +34,7 @@ func IsValidExtension(value string) bool {
 }
 
 func PanicOnNil[T interface{}](argument T, argumentName string) {
-	if IsNil(argument) || reflect.ValueOf(argument).IsZero() {
+	if reflect.ValueOf(argument).IsZero() {
 		panic(fmt.Sprintf("%s should not be NIL", argumentName))
 	}
 }
@@ -61,5 +53,6 @@ func IsValidFileTypeKey(value string) bool {
 		log.Warn("Passed value failed matching. Value: ", value)
 		return false
 	}
+
 	return matched
 }

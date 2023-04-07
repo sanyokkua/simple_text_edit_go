@@ -9,7 +9,7 @@ import (
 	"simple_text_editor/core/v3/validators"
 )
 
-const FilterExtensionPattern string = "*.%s;"
+const FilterExtensionPattern string = "*%s;"
 
 var AnyFileFilter = runtime.FileFilter{
 	DisplayName: "Any File",
@@ -49,8 +49,10 @@ func (r *TypeManagerStruct) GetTypeStructByExt(extension types.FileTypeExtension
 	reMapped := make(types.ExtensionsMap, len(r.Mapping))
 
 	for _, jsonStruct := range r.Mapping {
-		utils.ForEach(jsonStruct.Extensions, func(_ int, data *types.FileTypeExtension) {
-			reMapped[*data] = jsonStruct
+		jsStruct := jsonStruct
+
+		utils.ForEach(jsStruct.Extensions, func(_ int, data *types.FileTypeExtension) {
+			reMapped[*data] = jsStruct
 		})
 	}
 

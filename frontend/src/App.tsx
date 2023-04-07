@@ -1,7 +1,7 @@
 import React from "react";
 
 import {EventsOn} from "../wailsjs/runtime";
-import {GetFilesShortInfo, GetOpenedFile} from "../wailsjs/go/frontendapi/FrontendApiStruct";
+import {GetFilesShortInfo, GetOpenedFile, NewFile} from "../wailsjs/go/frontendapi/FrontendApiStruct";
 import {
     FileInfoStruct,
     FileStruct,
@@ -9,9 +9,10 @@ import {
     FrontendFileInfoArrayContainerStruct,
 } from "./types/backend";
 import {
+    EventOnBlockUiFalse,
+    EventOnBlockUiTrue,
     EventOnFileClosed,
     EventOnFileContentIsUpdated,
-    EventOnFileInformationDisplay,
     EventOnFileInformationUpdated,
     EventOnFileIsSwitched,
     EventOnFileOpened,
@@ -24,15 +25,14 @@ import CodeEditor from "./components/CodeEditor";
 import TabBar from "./components/TabBar";
 import {NotificationType} from "./types/frontend";
 import AppModalInfoDialog from "./components/AppModalInfoDialog";
-import {Message} from "semantic-ui-react";
-import FileInfoEdit from "./components/FileInfoEdit";
+import {Dimmer, Message} from "semantic-ui-react";
 
 type AppState = {
     openedFiles: FileInfoStruct[];
     currentFile: FileStruct | null;
     notificationType: NotificationType;
     notificationMessage: string;
-    showFileInfoModal: boolean;
+    blockUi: boolean;
 };
 
 class App extends React.Component<any, AppState> {
@@ -43,7 +43,7 @@ class App extends React.Component<any, AppState> {
             currentFile: null,
             notificationType: NotificationType.NONE,
             notificationMessage: "",
-            showFileInfoModal: false,
+            blockUi: false,
         };
 
         EventsOn(EventOnInternalWarning, (eventData) => this.onEventOnInternalWarning(eventData));
@@ -54,14 +54,17 @@ class App extends React.Component<any, AppState> {
         EventsOn(EventOnFileSaved, (eventData) => this.updateEditorState());
         EventsOn(EventOnFileClosed, (eventData) => this.updateEditorState());
 
-        EventsOn(EventOnFileInformationDisplay, (eventData) => this.setState({showFileInfoModal: true}));
         EventsOn(EventOnFileInformationUpdated, (eventData) => this.updateEditorState());
 
         EventsOn(EventOnFileIsSwitched, (eventData) => this.updateEditorState());
         EventsOn(EventOnFileContentIsUpdated, (eventData) => this.updateEditorState());
+
+        EventsOn(EventOnBlockUiTrue, (eventData) => this.onEventOnBlockUiTrue());
+        EventsOn(EventOnBlockUiFalse, (eventData) => this.onEventOnBlockUiFalse());
     }
 
     onEventOnInternalWarning(event: string) {
+        this.onEventOnBlockUiFalse();
         this.setState({
             notificationType: NotificationType.WARNING,
             notificationMessage: event,
@@ -69,6 +72,7 @@ class App extends React.Component<any, AppState> {
     }
 
     onEventOnInternalError(event: string) {
+        this.onEventOnBlockUiFalse();
         this.setState({
             notificationType: NotificationType.ERROR,
             notificationMessage: event,
@@ -77,6 +81,18 @@ class App extends React.Component<any, AppState> {
 
     componentDidMount() {
         this.updateEditorState();
+    }
+
+    onEventOnBlockUiTrue() {
+        this.setState({blockUi: true});
+    }
+
+    onEventOnBlockUiFalse() {
+        this.setState({blockUi: false});
+    }
+
+    onNewFile() {
+        NewFile().catch((e) => this.onError(e));
     }
 
     onError(error: Error) {
@@ -91,7 +107,7 @@ class App extends React.Component<any, AppState> {
         GetFilesShortInfo()
             .then((files: FrontendFileInfoArrayContainerStruct) => {
                 if (files.HasError) {
-                    //TODO: add handling
+                    this.onError(new Error(files.Error));
                     return;
                 }
                 this.setState({openedFiles: files.Files});
@@ -99,7 +115,7 @@ class App extends React.Component<any, AppState> {
             .then(GetOpenedFile)
             .then((currentFile: FrontendFileContainerStruct) => {
                 if (currentFile.HasError) {
-                    //TODO: add handling
+                    this.onError(new Error(currentFile.Error));
                     return;
                 }
                 this.setState({currentFile: currentFile.File});
@@ -112,23 +128,25 @@ class App extends React.Component<any, AppState> {
         const showEditor: boolean = this.state.openedFiles.length > 0;
 
         const editorContent = <div>
-            <TabBar files={this.state.openedFiles} onError={(error: Error) => this.onError(error)}/>
+            <TabBar files={this.state.openedFiles} onError={(error: Error) => this.onError(error)}
+                    onNewFile={() => this.onNewFile()}/>
             <CodeEditor file={this.state.currentFile}/>
         </div>;
 
         const noContent = <Message color="yellow">No Opened Files</Message>;
         return (
             <div>
-                {showEditor ? editorContent : noContent}
-                <FileInfoEdit currentFile={this.state.currentFile} open={this.state.showFileInfoModal}
-                              onClose={() => this.setState({showFileInfoModal: false})}/>
-                <AppModalInfoDialog header={this.state.notificationType}
-                                    message={this.state.notificationMessage}
-                                    show={showInfoDialog}
-                                    onClose={() => this.setState({
-                                        notificationType: NotificationType.NONE,
-                                        notificationMessage: "",
-                                    })}/>
+                <Dimmer.Dimmable blurring dimmed={this.state.blockUi}>
+                    <Dimmer active={this.state.blockUi}/>
+                    {showEditor ? editorContent : noContent}
+                    <AppModalInfoDialog header={this.state.notificationType}
+                                        message={this.state.notificationMessage}
+                                        show={showInfoDialog}
+                                        onClose={() => this.setState({
+                                            notificationType: NotificationType.NONE,
+                                            notificationMessage: "",
+                                        })}/>
+                </Dimmer.Dimmable>
             </div>
         );
     }

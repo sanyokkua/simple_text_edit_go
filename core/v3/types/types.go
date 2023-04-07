@@ -18,6 +18,8 @@ const (
 	BtnCancel Button = "Cancel"
 )
 
+const NewFileName = "*No name*"
+
 func (r Button) EqualTo(another Button) bool {
 	return r == another
 }
@@ -46,7 +48,7 @@ func (r *FilesMap) Remove(fileId int64) error {
 }
 
 func (r *FilesMap) Add(fileStruct *FileStruct) error {
-	if validators.IsNil(fileStruct) {
+	if fileStruct == nil {
 		return errors.New("file Struct is NIL")
 	}
 
@@ -73,6 +75,40 @@ func (r *FilesMap) IsPathPresentInMap(path string) bool {
 	}
 
 	return false
+}
+
+func (r *FilesMap) GetSize() int {
+	deref := *r
+	return len(deref)
+}
+
+func (r *FilesMap) GetSlice() []*FileStruct {
+	deref := *r
+	files := make([]*FileStruct, 0, deref.GetSize())
+	for _, fileStruct := range deref {
+		f := fileStruct
+		files = append(files, f)
+	}
+	return files
+}
+
+func (r *FilesMap) Find(predicate func(file *FileStruct) bool) *FileStruct {
+	deref := *r
+	for _, fileStruct := range deref {
+		f := fileStruct
+		if predicate(f) {
+			return f
+		}
+	}
+	return nil
+}
+
+func (r *FilesMap) Foreach(action func(file *FileStruct)) {
+	deref := *r
+	for _, fileStruct := range deref {
+		f := fileStruct
+		action(f)
+	}
 }
 
 type FileTypeKey string

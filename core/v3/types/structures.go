@@ -48,9 +48,9 @@ type FileInfoStruct struct {
 }
 
 // FileStruct defines structure to keep all the information about file that currently opened in memory of the app.
-// Id - is used to access files
+// Id - is used to access files. 27648617239328 (any number)
 // Path - Full path to the file if it was opened. Ex: /home/username/AwesomeFile.txt
-// Name - Name of the file. Example AwesomeFile.txt
+// Name - Name of the file. Example AwesomeFile
 // Type - key that represent type in
 // Extension - .txt
 // InitialExtension - "" or ".txt" or any other

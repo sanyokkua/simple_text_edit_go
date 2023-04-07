@@ -28,9 +28,11 @@ func mapFileStructToInfoStruct(fileStruct *types.FileStruct) types.FileInfoStruc
 }
 
 func (r *EditorStruct) GetFilesShortInfo() ([]types.FileInfoStruct, error) {
-	filesInfoSlice := make([]types.FileInfoStruct, 0, len(r.Files))
+	filesInfoSlice := make([]types.FileInfoStruct, 0, r.Files.GetSize())
 
-	for _, fileStruct := range r.Files {
+	slice := r.Files.GetSlice()
+
+	for _, fileStruct := range slice {
 		infoStruct := mapFileStructToInfoStruct(fileStruct)
 		filesInfoSlice = append(filesInfoSlice, infoStruct)
 	}
@@ -39,12 +41,14 @@ func (r *EditorStruct) GetFilesShortInfo() ([]types.FileInfoStruct, error) {
 }
 
 func (r *EditorStruct) GetOpenedFile() (*types.FileStruct, error) {
-	for _, fileStruct := range r.Files {
-		if fileStruct.Opened {
-			return fileStruct, nil
-		}
+	currentFile := r.Files.Find(func(file *types.FileStruct) bool {
+		return file.Opened
+	})
+	if currentFile == nil {
+		return nil, errors.New("opened file is not found")
 	}
-	return nil, errors.New("opened file is not found")
+
+	return currentFile, nil
 }
 
 func (r *EditorStruct) CreateFileAndShow() error {
@@ -52,10 +56,12 @@ func (r *EditorStruct) CreateFileAndShow() error {
 	if validators.HasError(fileCreationErr) {
 		return fileCreationErr
 	}
+
 	fileAddErr := r.Files.Add(newFileEmpty)
 	if validators.HasError(fileAddErr) {
 		return fileAddErr
 	}
+
 	return r.ShowFile(newFileEmpty.Id)
 }
 
@@ -98,27 +104,15 @@ func (r *EditorStruct) SaveFile(fileId int64) error {
 		return saveErr
 	}
 
-	name, getNameErr := r.FileHelper.GetFileNameFromPath(file.Path)
-	if validators.HasError(getNameErr) {
-		return getNameErr
-	}
-
-	ext, getExtErr := r.FileHelper.GetFileExtensionFromPath(file.Path)
-	if validators.HasError(getExtErr) {
-		return getExtErr
-	}
-
-	fileType, getTypeErr := r.FileHelper.GetFileTypeFromExtension(ext)
-	if validators.HasError(getTypeErr) {
-		return getTypeErr
+	_, updErr := r.FileHelper.UpdateFileDataOnFilePath(file.Path, file)
+	if updErr != nil {
+		return updErr
 	}
 
 	file.InitialContent = file.ActualContent
+	file.InitialExtension = file.Extension
 	file.New = false
 	file.Changed = false
-	file.Name = name
-	file.Type = string(fileType)
-	file.Extension = string(ext)
 
 	return nil
 }
@@ -134,14 +128,11 @@ func (r *EditorStruct) CloseFile(fileId int64) error {
 		return removeErr
 	}
 
-	var nextFile *types.FileStruct
+	nextFile := r.Files.Find(func(file *types.FileStruct) bool {
+		return true
+	})
 
-	for _, fileStruct := range r.Files {
-		nextFile = fileStruct
-		break
-	}
-
-	if validators.IsNil(nextFile) {
+	if nextFile == nil {
 		empty, fileCreationErr := r.FileHelper.CreateNewFileEmpty()
 		if validators.HasError(fileCreationErr) {
 			return fileCreationErr
@@ -176,9 +167,9 @@ func (r *EditorStruct) GetFileById(fileId int64) (*types.FileStruct, error) {
 }
 
 func (r *EditorStruct) HideAllFiles() {
-	for _, file := range r.Files {
+	r.Files.Foreach(func(file *types.FileStruct) {
 		file.Opened = false
-	}
+	})
 }
 
 func (r *EditorStruct) UpdateFileContent(fileId int64, content string) error {

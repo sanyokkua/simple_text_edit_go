@@ -152,7 +152,7 @@ func Test_createFileFilter(t *testing.T) {
 	fileType := types.FileTypesJsonStruct{
 		Key:        "cpp",
 		Name:       "C++",
-		Extensions: []types.FileTypeExtension{"cpp", "hh", "c++"},
+		Extensions: []types.FileTypeExtension{".cpp", ".hh", ".c++"},
 	}
 	filter := createFileFilter(&fileType)
 	if filter.DisplayName != fileType.Name {

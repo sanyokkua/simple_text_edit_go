@@ -11,7 +11,7 @@ export function GetFileTypeExtension(arg1) {
 }
 
 export function GetFileTypes() {
-    return window['go']['frontendapi']['FrontendApiStruct']['GetFileTypes']();
+  return window['go']['frontendapi']['FrontendApiStruct']['GetFileTypes']();
 }
 
 export function GetFilesShortInfo() {
@@ -22,14 +22,14 @@ export function GetOpenedFile() {
     return window['go']['frontendapi']['FrontendApiStruct']['GetOpenedFile']();
 }
 
+export function NewFile() {
+    return window['go']['frontendapi']['FrontendApiStruct']['NewFile']();
+}
+
 export function SwitchOpenedFileTo(arg1) {
     return window['go']['frontendapi']['FrontendApiStruct']['SwitchOpenedFileTo'](arg1);
 }
 
 export function UpdateFileContent(arg1, arg2) {
     return window['go']['frontendapi']['FrontendApiStruct']['UpdateFileContent'](arg1, arg2);
-}
-
-export function UpdateFileInformation(arg1, arg2) {
-    return window['go']['frontendapi']['FrontendApiStruct']['UpdateFileInformation'](arg1, arg2);
 }

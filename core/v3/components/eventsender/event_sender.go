@@ -13,10 +13,11 @@ const (
 	EventOnFileOpened             types.Destination = "EventOnFileOpened"
 	EventOnFileSaved              types.Destination = "EventOnFileSaved"
 	EventOnFileClosed             types.Destination = "EventOnFileClosed"
-	EventOnFileInformationDisplay types.Destination = "EventOnFileInformationDisplay"
 	EventOnFileInformationUpdated types.Destination = "EventOnFileInformationUpdated"
 	EventOnFileIsSwitched         types.Destination = "EventOnFileIsSwitched"
 	EventOnFileContentIsUpdated   types.Destination = "EventOnFileContentIsUpdated"
+	EventOnBlockUiTrue            types.Destination = "EventOnBlockUiTrue"
+	EventOnBlockUiFalse           types.Destination = "EventOnBlockUiFalse"
 )
 
 type EventSenderStruct struct {

@@ -12,8 +12,8 @@ export function GetFilesShortInfo(): Promise<types.FrontendFileInfoArrayContaine
 
 export function GetOpenedFile(): Promise<types.FrontendFileContainerStruct>;
 
+export function NewFile(): Promise<void>;
+
 export function SwitchOpenedFileTo(arg1: number): Promise<void>;
 
 export function UpdateFileContent(arg1: number, arg2: string): Promise<void>;
-
-export function UpdateFileInformation(arg1: number, arg2: types.FileTypeUpdateStruct): Promise<void>;

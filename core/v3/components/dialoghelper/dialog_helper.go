@@ -16,7 +16,7 @@ func (r *DialogHelperStruct) OpenFileDialog() (filePath string, err error) {
 
 	filePath, err = runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
 		Title:   "Open File",
-		Filters: r.TypeManager.GetSupportedFileFilters(),
+		Filters: r.TypeManager.GetSupportedFileFilters(), //TODO:
 	})
 
 	return filePath, err
@@ -27,7 +27,6 @@ func (r *DialogHelperStruct) SaveFileDialog(defaultFileNameWithExt string) (file
 
 	filePath, err = runtime.SaveFileDialog(ctx, runtime.SaveDialogOptions{
 		Title:           "Save File As...",
-		Filters:         r.TypeManager.GetSupportedFileFilters(),
 		DefaultFilename: defaultFileNameWithExt,
 	})
 

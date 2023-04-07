@@ -2,15 +2,17 @@ package application
 
 import (
 	"context"
-	"simple_text_editor/core/v3/factories/dialoghelper"
-	"simple_text_editor/core/v3/factories/editor"
-	"simple_text_editor/core/v3/factories/eventsender"
-	"simple_text_editor/core/v3/factories/filehelper"
-	"simple_text_editor/core/v3/factories/frontendapi"
-	"simple_text_editor/core/v3/factories/menuhelper"
-	"simple_text_editor/core/v3/factories/menuopshelper"
-	"simple_text_editor/core/v3/factories/typemanager"
-	"simple_text_editor/core/v3/factories/uniqueidgen"
+	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"simple_text_editor/core/v3/components/dialoghelper"
+	"simple_text_editor/core/v3/components/editor"
+	"simple_text_editor/core/v3/components/eventsender"
+	"simple_text_editor/core/v3/components/filehelper"
+	"simple_text_editor/core/v3/components/frontendapi"
+	"simple_text_editor/core/v3/components/menuhelper"
+	"simple_text_editor/core/v3/components/menuopshelper"
+	"simple_text_editor/core/v3/components/typemanager"
+	"simple_text_editor/core/v3/components/uniqueidgen"
 	"simple_text_editor/core/v3/types"
 	"simple_text_editor/core/v3/validators"
 )
@@ -19,14 +21,39 @@ type ApplicationStruct struct {
 	Context     context.Context
 	MenuHelper  types.IMenuHelper
 	FrontendApi types.IFrontendApi
+	iEditor     types.IEditor
 }
 
+func (r *ApplicationStruct) switchWinTitle() {
+	file, err := r.iEditor.GetOpenedFile()
+	if err != nil {
+		return
+	}
+	if file.New {
+		runtime.WindowSetTitle(r.Context, fmt.Sprintf("Simple Text Editor"))
+	} else {
+		runtime.WindowSetTitle(r.Context, fmt.Sprintf("Simple Text Editor. File Path: %s", file.Path))
+	}
+
+}
 func (r *ApplicationStruct) GetContext() context.Context {
 	return r.Context
 }
 
 func (r *ApplicationStruct) OnStartup(ctx context.Context) {
 	r.Context = ctx
+	runtime.EventsOn(ctx, string(eventsender.EventOnFileOpened), func(optionalData ...interface{}) {
+		r.switchWinTitle()
+	})
+	runtime.EventsOn(ctx, string(eventsender.EventOnFileSaved), func(optionalData ...interface{}) {
+		r.switchWinTitle()
+	})
+	runtime.EventsOn(ctx, string(eventsender.EventOnFileIsSwitched), func(optionalData ...interface{}) {
+		r.switchWinTitle()
+	})
+	runtime.EventsOn(ctx, string(eventsender.EventOnNewFileCreated), func(optionalData ...interface{}) {
+		r.switchWinTitle()
+	})
 }
 
 func (r *ApplicationStruct) OnDomReady(ctx context.Context) {
@@ -62,11 +89,12 @@ func CreateIApplication(typesMap types.TypesMap) types.IApplication {
 	iEventSender := eventsender.CreateIEventSender(application.GetContext)
 	iDialogHelper := dialoghelper.CreateIDialogHelper(application.GetContext, iTypeManager)
 	iMenuOpsHelper := menuopshelper.CreateIMenuOpsHelper(application.GetContext, iEventSender, iDialogHelper, iEditor)
-	iMenuHelper := menuhelper.CreateIMenuHelper(iMenuOpsHelper)
+	iMenuHelper := menuhelper.CreateIMenuHelper(iMenuOpsHelper, iTypeManager)
 	frontendApi := frontendapi.CreateIFrontendApi(iEditor, iEventSender, iDialogHelper, iTypeManager)
 
 	application.MenuHelper = iMenuHelper
 	application.FrontendApi = frontendApi
+	application.iEditor = iEditor
 
 	return &application
 }

@@ -1,12 +1,13 @@
 import React from "react";
 import {FileInfoStruct} from "../types/backend";
 import {SemanticCOLORS} from "semantic-ui-react/dist/commonjs/generic";
-import {Icon, Menu} from "semantic-ui-react";
+import {Button, Icon, Menu} from "semantic-ui-react";
 import {CloseFile, SwitchOpenedFileTo} from "../../wailsjs/go/frontendapi/FrontendApiStruct";
 
 type FilesTabBarProps = {
     files: FileInfoStruct[];
     onError: (error: Error) => void;
+    onNewFile: () => void;
 };
 type MenuItemInfo = {
     fileId: number;
@@ -63,7 +64,14 @@ class TabBar extends React.Component<FilesTabBarProps, any> {
 
             </Menu.Item>;
         });
-        return <Menu tabular>{menuItems}</Menu>;
+        return <Menu tabular size="mini" stackable>
+            {menuItems}
+            <Menu.Item position="left">
+                <Button icon primary onClick={() => this.props.onNewFile()}>
+                    <Icon name="plus circle"/>
+                </Button>
+            </Menu.Item>
+        </Menu>;
     }
 }
 

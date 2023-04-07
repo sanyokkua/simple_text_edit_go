@@ -34,6 +34,8 @@ type IFileHelper interface {
 
 	CreateNewFileEmpty() (*FileStruct, error)
 	CreateNewFileWithData(path string, originalContent string) (*FileStruct, error)
+
+	UpdateFileDataOnFilePath(path string, file *FileStruct) (*FileStruct, error)
 }
 
 //go:generate mockery --name IEventSender
@@ -61,13 +63,16 @@ type IMenuOpsHelper interface {
 	OpenFile()
 	SaveFile()
 	SaveFileAs()
-	ShowFileInfoModal()
 	CloseFile()
 	CloseApplication()
+
+	ChangeExtension(fileType FileTypeKey, fileExtension FileTypeExtension)
+	BlockUI(state bool)
 }
 
 //go:generate mockery --name IFrontendApi
 type IFrontendApi interface {
+	NewFile()
 	GetFilesShortInfo() FrontendFileInfoArrayContainerStruct
 	GetOpenedFile() FrontendFileContainerStruct
 	GetFileTypes() FrontendKeyValueArrayContainerStruct
@@ -75,7 +80,6 @@ type IFrontendApi interface {
 
 	SwitchOpenedFileTo(fileId int64)
 	UpdateFileContent(fileId int64, content string)
-	UpdateFileInformation(fileId int64, updateStruct FileTypeUpdateStruct)
 	CloseFile(fileId int64)
 }
 

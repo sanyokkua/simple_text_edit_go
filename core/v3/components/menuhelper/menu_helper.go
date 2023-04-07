@@ -9,6 +9,7 @@ import (
 
 type MenuHelperStruct struct {
 	MenuOpsHelper types.IMenuOpsHelper
+	TypeManager   types.ITypeManager
 }
 
 func (r *MenuHelperStruct) CreateMenu() *menu.Menu {
@@ -23,10 +24,50 @@ func (r *MenuHelperStruct) CreateMenu() *menu.Menu {
 	file.AddText("Close Application", keys.CmdOrCtrl("Q"), r.menuFileCloseApp)
 
 	edit := appMenu.AddSubmenu("Edit")
-	edit.AddText("Edit File Information", nil, r.menuEditFileInfo)
 	edit.AddText("Sort", keys.CmdOrCtrl("L"), r.menuEditSort)
+	changeType := edit.AddSubmenu("Change File Type")
+
+	err := r.CreateFileTypeSubmenu(changeType)
+	if err != nil {
+		return nil
+	}
+
+	debug := appMenu.AddSubmenu("debug")
+	debug.AddText("Block UI", nil, func(data *menu.CallbackData) {
+		r.MenuOpsHelper.BlockUI(true)
+	})
+	debug.AddText("Unblock UI", nil, func(data *menu.CallbackData) {
+		r.MenuOpsHelper.BlockUI(false)
+	})
 
 	return appMenu
+}
+
+func (r *MenuHelperStruct) CreateFileTypeSubmenu(topMenu *menu.Menu) error {
+	typeMappings, getMappingErr := r.TypeManager.BuildFileTypeMappingKeyToName()
+	if getMappingErr != nil {
+		return getMappingErr
+	}
+
+	for _, typeMapping := range typeMappings {
+		extensions, extErr := r.TypeManager.GetExtensionsForType(types.FileTypeKey(typeMapping.Key))
+		if extErr != nil {
+			return extErr
+		}
+
+		header := typeMapping.Value
+		submenu := topMenu.AddSubmenu(header)
+
+		for _, extension := range extensions {
+			submenu.AddText(string(extension), nil, func(data *menu.CallbackData) {
+				fType := types.FileTypeKey(typeMapping.Key)
+				fExt := extension
+				r.MenuOpsHelper.ChangeExtension(fType, fExt)
+			})
+		}
+	}
+
+	return nil
 }
 
 func (r *MenuHelperStruct) menuFileNew(*menu.CallbackData) {
@@ -53,18 +94,16 @@ func (r *MenuHelperStruct) menuFileCloseApp(*menu.CallbackData) {
 	r.MenuOpsHelper.CloseApplication()
 }
 
-func (r *MenuHelperStruct) menuEditFileInfo(*menu.CallbackData) {
-	r.MenuOpsHelper.ShowFileInfoModal()
-}
-
 func (r *MenuHelperStruct) menuEditSort(*menu.CallbackData) {
 	// TODO: add later
 }
 
-func CreateIMenuHelper(menuOpsHelper types.IMenuOpsHelper) types.IMenuHelper {
+func CreateIMenuHelper(menuOpsHelper types.IMenuOpsHelper, typeManager types.ITypeManager) types.IMenuHelper {
 	validators.PanicOnNil(menuOpsHelper, "IMenuOpsHelper")
+	validators.PanicOnNil(typeManager, "ITypeManager")
 
 	return &MenuHelperStruct{
 		MenuOpsHelper: menuOpsHelper,
+		TypeManager:   typeManager,
 	}
 }

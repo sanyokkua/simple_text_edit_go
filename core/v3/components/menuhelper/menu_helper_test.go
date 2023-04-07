@@ -15,7 +15,7 @@ func TestCreateIMenuHelperPanic(t *testing.T) {
 		require.NotNil(t, r, "Code didn't panic")
 	}()
 
-	CreateIMenuHelper(nil)
+	CreateIMenuHelper(nil, nil)
 }
 
 func TestMenuHelperStruct_CreateMenu(t *testing.T) {

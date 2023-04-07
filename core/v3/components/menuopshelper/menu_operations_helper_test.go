@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"simple_text_editor/core/v3/factories/eventsender"
+	"simple_text_editor/core/v3/components/eventsender"
 	"simple_text_editor/core/v3/types"
 	"simple_text_editor/core/v3/types/mocks"
 	"testing"
@@ -271,10 +271,6 @@ func TestMenuHelperOperationsStruct_SaveFile(t *testing.T) {
 }
 
 func TestMenuHelperOperationsStruct_SaveFileAs(t *testing.T) {
-
-}
-
-func TestMenuHelperOperationsStruct_ShowFileInfoModal(t *testing.T) {
 
 }
 

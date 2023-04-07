@@ -3,7 +3,7 @@ package menuopshelper
 import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"simple_text_editor/core/v3/factories/eventsender"
+	"simple_text_editor/core/v3/components/eventsender"
 	"simple_text_editor/core/v3/types"
 	"simple_text_editor/core/v3/validators"
 )
@@ -76,7 +76,21 @@ func (r *MenuHelperOperationsStruct) SaveFileAs() {
 		return
 	}
 
-	filePath, dialErr := r.DialogHelper.SaveFileDialog(file.Name)
+	var fileName string
+	var fileExtension string
+
+	if file.New && file.Name == types.NewFileName {
+		fileName = ""
+	} else {
+		fileName = file.Name
+	}
+	if file.New && len(file.Extension) == 0 {
+		fileExtension = ".txt"
+	} else {
+		fileExtension = file.Extension
+	}
+
+	filePath, dialErr := r.DialogHelper.SaveFileDialog(fileName + fileExtension)
 	if validators.HasError(dialErr) {
 		r.EventSender.SendErrorEvent("Failed to process Save File Dialog", dialErr)
 		return
@@ -86,11 +100,9 @@ func (r *MenuHelperOperationsStruct) SaveFileAs() {
 	r.saveFile(file.Id)
 }
 
-func (r *MenuHelperOperationsStruct) ShowFileInfoModal() {
-	r.EventSender.SendNotificationEvent(eventsender.EventOnFileInformationDisplay)
-}
-
 func (r *MenuHelperOperationsStruct) CloseFile() {
+	r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiTrue)
+
 	file, getFileErr := r.Editor.GetOpenedFile()
 	if validators.HasError(getFileErr) {
 		r.EventSender.SendErrorEvent("Failed to access current file in memory", getFileErr)
@@ -114,6 +126,7 @@ func (r *MenuHelperOperationsStruct) CloseFile() {
 		}
 
 		if btn.EqualTo(types.BtnCancel) {
+			r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiFalse)
 			return
 		}
 
@@ -125,9 +138,12 @@ func (r *MenuHelperOperationsStruct) CloseFile() {
 	}
 
 	r.EventSender.SendNotificationEvent(eventsender.EventOnFileClosed)
+	r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiFalse)
 }
 
 func (r *MenuHelperOperationsStruct) CloseApplication() {
+	r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiTrue)
+
 	allFilesInfo, getFilesErr := r.Editor.GetFilesShortInfo()
 	if validators.HasError(getFilesErr) {
 		r.EventSender.SendErrorEvent("Failed to get all files")
@@ -154,10 +170,44 @@ func (r *MenuHelperOperationsStruct) CloseApplication() {
 		return
 	}
 
+	r.EventSender.SendNotificationEvent(eventsender.EventOnBlockUiFalse)
+
 	if btn.EqualTo(types.BtnOk) {
 		RuntimeQuit(r.GetContext())
 		return
 	}
+}
+
+func (r *MenuHelperOperationsStruct) ChangeExtension(fileType types.FileTypeKey, fileExtension types.FileTypeExtension) {
+	file, getFileErr := r.Editor.GetOpenedFile()
+	if validators.HasError(getFileErr) {
+		r.EventSender.SendErrorEvent("Failed to access current file in memory", getFileErr)
+		return
+	}
+
+	updateStruct := types.FileTypeUpdateStruct{
+		Id:        file.Id,
+		Type:      string(fileType),
+		Extension: string(fileExtension),
+	}
+
+	updateErr := r.Editor.UpdateFileInformation(file.Id, updateStruct)
+	if validators.HasError(updateErr) {
+		r.EventSender.SendWarnEvent("File information was not updated", updateErr)
+		return
+	}
+
+	r.EventSender.SendNotificationEvent(eventsender.EventOnFileInformationUpdated)
+}
+
+func (r *MenuHelperOperationsStruct) BlockUI(state bool) {
+	var dst types.Destination
+	if state {
+		dst = eventsender.EventOnBlockUiTrue
+	} else {
+		dst = eventsender.EventOnBlockUiFalse
+	}
+	r.EventSender.SendNotificationEvent(dst)
 }
 
 func CreateIMenuOpsHelper(getContext types.ContextProvider,

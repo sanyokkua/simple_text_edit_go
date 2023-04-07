@@ -6,10 +6,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	//"simple_text_editor/core/v2"
-	//"simple_text_editor/core/v2/utils"
-	"simple_text_editor/core/v3/factories/application"
-	utils2 "simple_text_editor/core/v3/utils"
+	"simple_text_editor/core/v3/components/application"
+	"simple_text_editor/core/v3/utils"
 	"simple_text_editor/core/v3/validators"
 )
 
@@ -21,11 +19,12 @@ const FileTypesFileName = "fileTypes.json"
 func main() {
 	newDefaultLogger := logger.NewDefaultLogger()
 
-	fileTypesJson, readErr := utils2.ReadFileTypesJson(FileTypesFileName)
+	fileTypesJson, readErr := utils.ReadFileTypesJson(FileTypesFileName)
 	if validators.HasError(readErr) {
 		panic("Failed to read config JSON")
 	}
-	typesMap, mapErr := utils2.MapFileTypesJsonStructToTypesMap(fileTypesJson)
+
+	typesMap, mapErr := utils.MapFileTypesJsonStructToTypesMap(fileTypesJson)
 	if validators.HasError(mapErr) {
 		panic("Failed to map fileTypes to FileTypeMap object")
 	}
