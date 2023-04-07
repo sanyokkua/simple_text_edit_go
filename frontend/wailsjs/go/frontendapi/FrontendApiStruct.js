@@ -15,7 +15,7 @@ export function GetFileTypes() {
 }
 
 export function GetFilesShortInfo() {
-    return window['go']['frontendapi']['FrontendApiStruct']['GetFilesShortInfo']();
+  return window['go']['frontendapi']['FrontendApiStruct']['GetFilesShortInfo']();
 }
 
 export function GetOpenedFile() {

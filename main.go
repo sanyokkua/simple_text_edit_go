@@ -2,11 +2,13 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"simple_text_editor/core/v3/components/application"
+	"simple_text_editor/core/v3/types"
 	"simple_text_editor/core/v3/utils"
 	"simple_text_editor/core/v3/validators"
 )
@@ -14,17 +16,21 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-const FileTypesFileName = "fileTypes.json"
+//const FileTypesFileName = "frontend/public/fileTypes.json" //TODO: remove
 
 func main() {
 	newDefaultLogger := logger.NewDefaultLogger()
 
-	fileTypesJson, readErr := utils.ReadFileTypesJson(FileTypesFileName)
-	if validators.HasError(readErr) {
-		panic("Failed to read config JSON")
+	byteValue := []byte(ConfigJson)
+	var typesJsons []types.FileTypesJsonStruct
+
+	unmarshallErr := json.Unmarshal(byteValue, &typesJsons)
+	if validators.HasError(unmarshallErr) {
+		newDefaultLogger.Fatal(unmarshallErr.Error())
+		return
 	}
 
-	typesMap, mapErr := utils.MapFileTypesJsonStructToTypesMap(fileTypesJson)
+	typesMap, mapErr := utils.MapFileTypesJsonStructToTypesMap(typesJsons)
 	if validators.HasError(mapErr) {
 		panic("Failed to map fileTypes to FileTypeMap object")
 	}
@@ -49,7 +55,7 @@ func main() {
 			iFrontApi,
 		},
 		Debug: options.Debug{
-			OpenInspectorOnStartup: true,
+			OpenInspectorOnStartup: false,
 		},
 		Logger: newDefaultLogger,
 	})
