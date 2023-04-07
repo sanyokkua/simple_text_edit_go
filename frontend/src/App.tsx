@@ -1,209 +1,155 @@
-import React from "react"
+import React from "react";
 
 import {EventsOn} from "../wailsjs/runtime";
-import CodeMirror from '@uiw/react-codemirror';
-import {LanguageName, loadLanguage} from '@uiw/codemirror-extensions-langs';
+import {GetFilesShortInfo, GetOpenedFile, NewFile} from "../wailsjs/go/frontendapi/FrontendApiStruct";
 import {
-    ChangeFileContent,
-    ChangeFileInformation,
-    ChangeFileStatusToOpened,
-    FindOpenedFile,
-    GetFilesInformation
-} from "../wailsjs/go/jsapi/JsStruct"
-import {FileStruct, InformationStruct} from "./types/types";
+    FileInfoStruct,
+    FileStruct,
+    FrontendFileContainerStruct,
+    FrontendFileInfoArrayContainerStruct,
+} from "./types/backend";
 import {
-    EventOnErrorHappened,
+    EventOnBlockUiFalse,
+    EventOnBlockUiTrue,
     EventOnFileClosed,
-    EventOnFileInformationChange,
+    EventOnFileContentIsUpdated,
     EventOnFileInformationUpdated,
+    EventOnFileIsSwitched,
     EventOnFileOpened,
     EventOnFileSaved,
-    EventOnNewFileCreate
+    EventOnInternalError,
+    EventOnInternalWarning,
+    EventOnNewFileCreated,
 } from "./types/constants";
-import {Menu} from "semantic-ui-react";
-import {SemanticCOLORS} from "semantic-ui-react/dist/commonjs/generic";
-import ErrorDialog from "./components/ErrorDialog";
-import {DialogResult, InfoChangeDialog} from "./components/InfoChangeDialog";
+import CodeEditor from "./components/CodeEditor";
+import TabBar from "./components/TabBar";
+import {NotificationType} from "./types/frontend";
+import AppModalInfoDialog from "./components/AppModalInfoDialog";
+import {Dimmer, Message} from "semantic-ui-react";
 
 type AppState = {
-    files: InformationStruct[];
-    currentFile: FileStruct;
-    currentLanguage: any | null;
-    errorModal: boolean;
-    errorText: string;
-    showInfoEdit: boolean;
+    openedFiles: FileInfoStruct[];
+    currentFile: FileStruct | null;
+    notificationType: NotificationType;
+    notificationMessage: string;
+    blockUi: boolean;
 };
-
-const COLOR_NEW: SemanticCOLORS = "red"
-const COLOR_NO_CHANGES: SemanticCOLORS = "black"
-const COLOR_HAS_CHANGES: SemanticCOLORS = "blue"
 
 class App extends React.Component<any, AppState> {
     constructor(props: any) {
         super(props);
         this.state = {
-            files: [],
-            currentFile: {} as FileStruct,
-            currentLanguage: null,
-            errorModal: false,
-            errorText: "",
-            showInfoEdit: false
+            openedFiles: [],
+            currentFile: null,
+            notificationType: NotificationType.NONE,
+            notificationMessage: "",
+            blockUi: false,
         };
-        EventsOn(EventOnNewFileCreate, () => {
-            console.log("EventOnNewFileCreate")
-            this.updateState().catch((e) => this.onErrorProcessing(e))
+
+        EventsOn(EventOnInternalWarning, (eventData) => this.onEventOnInternalWarning(eventData));
+        EventsOn(EventOnInternalError, (eventData) => this.onEventOnInternalError(eventData));
+
+        EventsOn(EventOnNewFileCreated, (eventData) => this.updateEditorState());
+        EventsOn(EventOnFileOpened, (eventData) => this.updateEditorState());
+        EventsOn(EventOnFileSaved, (eventData) => this.updateEditorState());
+        EventsOn(EventOnFileClosed, (eventData) => this.updateEditorState());
+
+        EventsOn(EventOnFileInformationUpdated, (eventData) => this.updateEditorState());
+
+        EventsOn(EventOnFileIsSwitched, (eventData) => this.updateEditorState());
+        EventsOn(EventOnFileContentIsUpdated, (eventData) => this.updateEditorState());
+
+        EventsOn(EventOnBlockUiTrue, (eventData) => this.onEventOnBlockUiTrue());
+        EventsOn(EventOnBlockUiFalse, (eventData) => this.onEventOnBlockUiFalse());
+    }
+
+    onEventOnInternalWarning(event: string) {
+        this.onEventOnBlockUiFalse();
+        this.setState({
+            notificationType: NotificationType.WARNING,
+            notificationMessage: event,
         });
-        EventsOn(EventOnFileOpened, () => {
-            console.log("EventOnFileOpened")
-            this.updateState().catch((e) => this.onErrorProcessing(e))
-        });
-        EventsOn(EventOnFileSaved, (file) => {
-            console.log("EventOnFileSaved", file)
-            this.updateState().catch((e) => this.onErrorProcessing(e))
-        });
-        EventsOn(EventOnFileClosed, (file) => {
-            console.log("EventOnFileClosed", file)
-            this.updateState().catch((e) => this.onErrorProcessing(e))
-        });
-        EventsOn(EventOnErrorHappened, (error) => {
-            console.log("EventOnErrorHappened")
-            this.onErrorProcessing(error)
-        });
-        EventsOn(EventOnFileInformationUpdated, (msg: string) => {
-            console.log(msg);
-            this.updateState().catch((e) => this.onErrorProcessing(e))
-        });
-        EventsOn(EventOnFileInformationChange, () => {
-            console.log("EventOnFileInformationChange")
-            this.setState({showInfoEdit: true});
+    }
+
+    onEventOnInternalError(event: string) {
+        this.onEventOnBlockUiFalse();
+        this.setState({
+            notificationType: NotificationType.ERROR,
+            notificationMessage: event,
         });
     }
 
     componentDidMount() {
-        this.updateState().catch((e) => this.onErrorProcessing(e))
+        this.updateEditorState();
     }
 
-    onErrorProcessing(error: any) {
-        let msg = error?.message ? error?.message : JSON.stringify(error)
-        console.error(msg)
+    onEventOnBlockUiTrue() {
+        this.setState({blockUi: true});
+    }
+
+    onEventOnBlockUiFalse() {
+        this.setState({blockUi: false});
+    }
+
+    onNewFile() {
+        NewFile().catch((e) => this.onError(e));
+    }
+
+    onError(error: Error) {
+        const msg: string = error?.message ? error?.message : JSON.stringify(error);
         this.setState({
-            errorModal: true,
-            errorText: msg
-        })
-    }
-
-    async updateState() {
-        try {
-            const files: InformationStruct[] = await GetFilesInformation()
-            console.log(files)
-            // Sort files by time of open/creation (internal ID of each file)
-            files.sort((a, b) => a.OpenTimeStamp - b.OpenTimeStamp)
-
-            const currentFile: FileStruct = await FindOpenedFile()
-            console.log(currentFile)
-
-            let currentFileLang = null;
-            if (currentFile.FileInfo.FileType !== "txt") {
-                currentFileLang = loadLanguage(currentFile.FileInfo.FileType as LanguageName);
-            }
-
-            this.setState({
-                files: files,
-                currentFile: currentFile,
-                currentLanguage: currentFileLang,
-            });
-        } catch (e) {
-            this.onErrorProcessing(e)
-        }
-    }
-
-    tabIsChanged(fileId: number) {
-        ChangeFileStatusToOpened(fileId)
-            .then(() => this.updateState())
-            .catch((e) => this.onErrorProcessing(e))
-    }
-
-    contentIsChanged(text: string) {
-        // @ts-ignore
-        let openTimeStamp: number = this.state.currentFile?.FileInfo.OpenTimeStamp;
-        ChangeFileContent(openTimeStamp, text)
-            .then((hasChanges: boolean) => this.state.currentFile?.FileInfo.FileHasChanges !== hasChanges)
-            .then((needsUpdate: boolean) => {
-                    if (needsUpdate) {
-                        return this.updateState().then()
-                    }
-                },
-            ).catch((e) => this.onErrorProcessing(e));
-    }
-
-    fileInfoChanged(data: DialogResult) {
-        this.setState({
-            showInfoEdit: false
+            notificationType: NotificationType.ERROR,
+            notificationMessage: msg,
         });
-        ChangeFileInformation(data).catch((e) => this.onErrorProcessing(e))
-        console.log(data)
+    }
+
+    updateEditorState() {
+        GetFilesShortInfo()
+            .then((files: FrontendFileInfoArrayContainerStruct) => {
+                if (files.HasError) {
+                    this.onError(new Error(files.Error));
+                    return;
+                }
+                this.setState({openedFiles: files.Files});
+            })
+            .then(GetOpenedFile)
+            .then((currentFile: FrontendFileContainerStruct) => {
+                if (currentFile.HasError) {
+                    this.onError(new Error(currentFile.Error));
+                    return;
+                }
+                this.setState({currentFile: currentFile.File});
+            })
+            .catch((e) => this.onError(e));
     }
 
     render() {
-        const extensions: any[] = []
-        if (this.state.currentLanguage) {
-            extensions.push(this.state.currentLanguage)
-        }
+        const showInfoDialog: boolean = this.state.notificationType !== NotificationType.NONE;
+        const showEditor: boolean = this.state.openedFiles.length > 0;
 
-        const menuItems = this.state.files.map(openedFile => {
-            const key: string = openedFile.OpenTimeStamp.toString();
-            const fileExist: boolean = openedFile.FileExists;
-            let fileName: string = "";
-            if (openedFile.FileName.trim().length == 0 && !fileExist) {
-                fileName = "*New." + openedFile.FileExtension;
-            } else {
-                if (openedFile.FileHasChanges) {
-                    fileName = "*" + openedFile.FileName + "." + openedFile.FileExtension;
-                } else {
-                    fileName = openedFile.FileName
-                }
-            }
-            const isActive: boolean = openedFile.FileIsOpened;
-            const hasChanges: boolean = openedFile.FileHasChanges
-            const color: SemanticCOLORS = fileExist ? hasChanges ? COLOR_HAS_CHANGES : COLOR_NO_CHANGES : COLOR_NEW;
+        const editorContent = <div>
+            <TabBar files={this.state.openedFiles} onError={(error: Error) => this.onError(error)}
+                    onNewFile={() => this.onNewFile()}/>
+            <CodeEditor file={this.state.currentFile}/>
+        </div>;
 
-            return <Menu.Item key={key} active={isActive} color={color}
-                              onClick={() => this.tabIsChanged(openedFile.OpenTimeStamp)}>
-                {fileName}
-            </Menu.Item>
-        });
-        const fileContent = this.state.currentFile?.ActualContent;
-
+        const noContent = <Message color="yellow">No Opened Files</Message>;
         return (
             <div>
-                <Menu tabular>{menuItems}</Menu>
-                <CodeMirror
-                    value={fileContent}
-                    height="100vh"
-                    onChange={(text) => this.contentIsChanged(text)}
-                    basicSetup={{
-                        foldGutter: true,
-                        allowMultipleSelections: true,
-                        indentOnInput: true,
-                        tabSize: 4,
-                        highlightActiveLine: true,
-                        highlightActiveLineGutter: true,
-                        highlightSelectionMatches: true,
-                        syntaxHighlighting: true,
-                        bracketMatching: true
-                    }}
-                    extensions={extensions}
-                />
-                <ErrorDialog errorText={this.state.errorText}
-                             showDialog={this.state.errorModal}
-                             onButtonClicked={() => this.setState({errorModal: false})}/>
-                <InfoChangeDialog showDialog={this.state.showInfoEdit}
-                                  fileInfo={this.state.currentFile.FileInfo}
-                                  onAcceptBtnClicked={(result: DialogResult) => this.fileInfoChanged(result)}
-                                  onCancelBtnClicked={() => this.setState({showInfoEdit: false})}/>
+                <Dimmer.Dimmable blurring dimmed={this.state.blockUi}>
+                    <Dimmer active={this.state.blockUi}/>
+                    {showEditor ? editorContent : noContent}
+                    <AppModalInfoDialog header={this.state.notificationType}
+                                        message={this.state.notificationMessage}
+                                        show={showInfoDialog}
+                                        onClose={() => this.setState({
+                                            notificationType: NotificationType.NONE,
+                                            notificationMessage: "",
+                                        })}/>
+                </Dimmer.Dimmable>
             </div>
-        )
+        );
     }
 }
 
-export default App
+export default App;
